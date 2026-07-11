@@ -1,0 +1,70 @@
+name: devil_i
+description: "A psychological habit tracker and focus ritual room."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.10.4 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # THE CORE ENGINE: Architecture & Data
+  provider: ^6.1.5+1
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+  path_provider: ^2.1.5
+  path: ^1.9.1
+  shared_preferences: ^2.5.5
+
+  # THE SENSORY ENGINE: Visuals & Feedback
+  google_fonts: ^8.0.2
+  vibration: ^3.1.8
+  audioplayers: ^6.6.0
+  video_player: ^2.11.1
+  fl_chart: ^1.2.0
+  signature: ^6.3.0
+  cupertino_icons: ^1.0.8
+
+  # THE RECKONING: Notifications & Alarms
+  intl: ^0.20.2
+  timezone: ^0.11.0
+  flutter_local_notifications: ^21.0.0
+  permission_handler: ^11.4.0 # CRITICAL: Required for Android 13+ Notification/Alarm permissions
+  home_widget: ^0.9.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+  # DATABASE GENERATION
+  isar_generator: ^3.1.0+1
+  build_runner: ^2.4.13
+
+  # THE ICON GENERATOR: Processing devilicon.png
+  flutter_launcher_icons: ^0.13.1
+
+# -------------------------------------------------------------------
+# THE ICON SPECIFICATION: "Sealing the Visual Identity"
+# -------------------------------------------------------------------
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/devilicon.png"
+  adaptive_icon_background: "#000000" # Deep Abyssal Black
+  adaptive_icon_foreground: "assets/icons/devilicon.png"
+
+flutter:
+  uses-material-design: true
+
+  # -------------------------------------------------------------------
+  # ASSET REPOSITORY: Ensure folder paths end with a slash /
+  # -------------------------------------------------------------------
+  assets:
+    - assets/icons/
+    - assets/videos/
+    - assets/audio/
+    - assets/images/
+    - assets/data/
