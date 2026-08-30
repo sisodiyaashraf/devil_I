@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
+import 'data/repositories/story_repository.dart';
+import 'presentation/providers/story_provider.dart';
 
 void main() {
   runApp(const WhispersApp());
@@ -13,8 +15,9 @@ class WhispersApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // StoryProvider gets added in a later step
-        Provider<void>.value(value: null),
+        ChangeNotifierProvider(
+          create: (_) => StoryProvider(StoryRepository())..loadStory(),
+        ),
       ],
       child: MaterialApp(
         title: 'Whispers',
