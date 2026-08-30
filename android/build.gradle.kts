@@ -35,9 +35,16 @@ subprojects {
 }
 
 subprojects {
-    afterEvaluate {
-        val android = extensions.findByName("android") as? com.android.build.gradle.BaseExtension
-        android?.run {
+    plugins.withId("com.android.library") {
+        extensions.configure(com.android.build.gradle.LibraryExtension::class.java) {
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_17
+                targetCompatibility = JavaVersion.VERSION_17
+            }
+        }
+    }
+    plugins.withId("com.android.application") {
+        extensions.configure(com.android.build.gradle.AppExtension::class.java) {
             compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_17
                 targetCompatibility = JavaVersion.VERSION_17
