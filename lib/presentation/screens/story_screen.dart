@@ -92,7 +92,8 @@ class _StoryScreenState extends State<StoryScreen> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildDeadEndView(
