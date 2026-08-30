@@ -21,7 +21,6 @@ class RitualResultCard extends StatefulWidget {
 }
 
 class _RitualResultCardState extends State<RitualResultCard> {
-  bool _showCloseIcon = false;
   bool _showStats = false;
 
   @override
@@ -31,10 +30,6 @@ class _RitualResultCardState extends State<RitualResultCard> {
     Future.delayed(
       const Duration(milliseconds: 600),
       () => setState(() => _showStats = true),
-    );
-    Future.delayed(
-      const Duration(seconds: 2),
-      () => setState(() => _showCloseIcon = true),
     );
   }
 

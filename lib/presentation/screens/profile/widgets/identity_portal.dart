@@ -2,10 +2,6 @@ import 'dart:math' as math;
 import 'package:devil_i/presentation/screens/home/widgets/glass_card.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-
-// RELATIVE IMPORTS
-import '../../../../presentation/providers/devil_provider.dart';
 
 class IdentityPortal extends StatelessWidget {
   final String userName;

@@ -18,7 +18,6 @@ class HabitList extends StatelessWidget {
     final realm = provider.currentRealm;
 
     final Color accentColor = _getAccentColor(realm);
-    final Color borderColor = _getBorderColor(realm);
 
     if (habits.isEmpty) {
       return _buildEmptyState(realm, accentColor);

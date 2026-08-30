@@ -11,7 +11,7 @@ class SensoryService {
   Future<void> triggerPunishment({bool isMortal = false}) async {
     // 1. DYNAMIC HAPTIC PATTERN
     // If it's a Mortal Sin/Blood Oath, the vibration is longer and more violent.
-    if (await Vibration.hasVibrator() ?? false) {
+    if (await Vibration.hasVibrator()) {
       if (isMortal) {
         // Pattern: [Wait, Vibrate, Wait, Vibrate, Wait, Heavy Vibrate]
         Vibration.vibrate(
@@ -36,7 +36,7 @@ class SensoryService {
 
   /// Triggered on Success. Provides a sense of "Release" or "Sanctuary."
   Future<void> triggerReward() async {
-    if (await Vibration.hasVibrator() ?? false) {
+    if (await Vibration.hasVibrator()) {
       // A soft, "pulsing" double-tap
       Vibration.vibrate(pattern: [0, 50, 50, 50]);
     }
@@ -52,7 +52,7 @@ class SensoryService {
 
   /// Used during Focus Mode to build psychological tension.
   Future<void> triggerHeartbeat({double intensity = 1.0}) async {
-    if (await Vibration.hasVibrator() ?? false) {
+    if (await Vibration.hasVibrator()) {
       // Logic: As the timer nears zero, the vibration gets "sharper"
       int duration = (100 * intensity).toInt().clamp(10, 100);
       Vibration.vibrate(duration: duration);

@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 
 // PROVIDERS
 import '../../providers/devil_provider.dart';
-import '../../providers/focus_provider.dart';
 
 // WIDGETS
 import 'widgets/devil_nav_bar.dart';
@@ -20,7 +19,7 @@ import 'widgets/reckoning_overlay.dart'; // THE NEW AUDIT OVERLAY
 import '../focus/focus_screen.dart';
 import '../mirror/mirror_screen.dart';
 import '../profile/profile_screen.dart';
-import 'widgets/SoulLedgerScreen.dart';
+import 'widgets/soul_ledger_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

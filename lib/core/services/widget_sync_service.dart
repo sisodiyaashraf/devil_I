@@ -2,7 +2,6 @@ import 'package:home_widget/home_widget.dart';
 import 'package:flutter/services.dart';
 
 class WidgetSyncService {
-  static const String _groupId = 'group.com.devil_i.app'; // Your App Group ID
   static const String _widgetName = 'DevilWidget';
 
   /// Updates the Home Widget with the latest Devil Data
