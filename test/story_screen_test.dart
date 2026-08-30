@@ -66,11 +66,11 @@ void main() {
 
     await tester.tap(find.text('Run away'));
     await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('You escaped the dark room.'), findsOneWidget);
     expect(find.text('Run away'), findsNothing);
 
-    await tester.pumpAndSettle();
     expect(find.text('THE END'), findsOneWidget);
     expect(find.text('Start Over'), findsOneWidget);
   });

@@ -5,6 +5,8 @@ import '../providers/story_provider.dart';
 import '../widgets/choice_button.dart';
 import '../widgets/revealing_text.dart';
 
+import '../widgets/glitch_overlay.dart';
+
 class StoryScreen extends StatefulWidget {
   const StoryScreen({super.key});
 
@@ -45,11 +47,15 @@ class _StoryScreenState extends State<StoryScreen> {
     );
 
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: padding,
-          child: Column(
-            children: [
+      body: GlitchOverlay(
+        key: ValueKey(node.id),
+        corruptionLevel: provider.corruptionLevel,
+        forceTrigger: node.glitchTrigger,
+        child: SafeArea(
+          child: Padding(
+            padding: padding,
+            child: Column(
+              children: [
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
