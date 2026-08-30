@@ -12,8 +12,9 @@ class WhispersApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: const [
+      providers: [
         // StoryProvider gets added in a later step
+        Provider<void>.value(value: null),
       ],
       child: MaterialApp(
         title: 'Whispers',

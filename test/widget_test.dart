@@ -3,11 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whispers/main.dart';
 
 void main() {
-  setUp(() {
-    SharedPreferences.setMockInitialValues({});
-  });
-
   testWidgets('App renders Whispers title text placeholder', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(const WhispersApp());
     expect(find.text('Whispers'), findsOneWidget);
   });
