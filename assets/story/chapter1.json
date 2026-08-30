@@ -1,0 +1,86 @@
+{
+  "start": {
+    "id": "start",
+    "text": "The floorboards above you groan with a slow, heavy rhythm. It is well past midnight, and the silence in the house makes the sound echo down the staircase. Something is walking upstairs, footsteps dragged and deliberate.",
+    "soundCue": "creak",
+    "choices": [
+      {
+        "label": "Investigate the stairs",
+        "nextNodeId": "stairs_up",
+        "isDark": true
+      },
+      {
+        "label": "Call out into the dark",
+        "nextNodeId": "call_out",
+        "isDark": false
+      }
+    ]
+  },
+  "stairs_up": {
+    "id": "stairs_up",
+    "text": "You ascend the stairs, each step yielding to your weight with a dry, splintering gasp. The air grows noticeably colder, smelling faintly of stagnant pool water and damp dust. A bedroom door at the end of the hall stands slightly ajar.",
+    "soundCue": "whisper",
+    "choices": [
+      {
+        "label": "Open the bedroom door",
+        "nextNodeId": "bedroom_trap",
+        "isDark": true
+      },
+      {
+        "label": "Listen from the hallway",
+        "nextNodeId": "hallway_wait",
+        "isDark": false
+      }
+    ]
+  },
+  "call_out": {
+    "id": "call_out",
+    "text": "Your voice sounds thin and fragile as it cuts through the dark house. No voice answers, but the heavy footsteps upstairs immediately stop. An intense, ringing silence settles over the hall.",
+    "soundCue": "silence",
+    "choices": [
+      {
+        "label": "Lock the front door and wait",
+        "nextNodeId": "locked_in",
+        "isDark": false
+      },
+      {
+        "label": "Go upstairs to check anyway",
+        "nextNodeId": "stairs_up",
+        "isDark": true
+      }
+    ]
+  },
+  "bedroom_trap": {
+    "id": "bedroom_trap",
+    "text": "You push the door. In the corner of the room, a figure stands facing the wall, its head bent at an impossible, broken angle. As you take a step back, the neck twists with a sickening wet snap, and the black eyes lock onto yours.",
+    "glitchTrigger": true,
+    "choices": []
+  },
+  "hallway_wait": {
+    "id": "hallway_wait",
+    "text": "You press your ear against the corridor wall, holding your breath. Slowly, you hear a synchronized, rhythmic breathing from the other side, matching your own heartbeats. But then you realize the sound is actually coming from directly behind you.",
+    "glitchTrigger": true,
+    "choices": [
+      {
+        "label": "Turn around slowly",
+        "nextNodeId": "bedroom_trap",
+        "isDark": true
+      },
+      {
+        "label": "Flee down the stairs",
+        "nextNodeId": "escape_attempt",
+        "isDark": false
+      }
+    ]
+  },
+  "locked_in": {
+    "id": "locked_in",
+    "text": "You slide the bolt shut, securing yourself inside the vestibule. But as you turn back, a shadow moves in the hallway mirror. You realize the noise wasn't upstairs anymore—it had already come down.",
+    "choices": []
+  },
+  "escape_attempt": {
+    "id": "escape_attempt",
+    "text": "You bolt down the stairs, tripping once but scrambling back up. You burst through the kitchen exit and tumble onto the frost-damp grass under the moonlight. The house stands quiet behind you, its windows empty and dark. You survived the night... for now.",
+    "choices": []
+  }
+}
