@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 // PROVIDERS
 import '../../providers/devil_provider.dart';
+import '../../providers/focus_provider.dart';
 
 // WIDGETS
 import 'widgets/devil_nav_bar.dart';
@@ -20,6 +21,7 @@ import '../focus/focus_screen.dart';
 import '../mirror/mirror_screen.dart';
 import '../profile/profile_screen.dart';
 import 'widgets/soul_ledger_screen.dart';
+import '../../widgets/ambient_particles.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -43,13 +45,19 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_currentIndex == index) return;
     HapticFeedback.selectionClick();
     setState(() => _currentIndex = index);
-    _pageController.jumpToPage(index);
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     // Watch the Devil's Realm for dynamic accent colors (Heaven/Hell/Void)
+    // Watch both providers for dynamic content and navigation locking
     final provider = context.watch<DevilProvider>();
+    final focusProvider = context.watch<FocusProvider>();
     final realm = provider.currentRealm;
 
     final accentColor = realm == "HEAVEN"
@@ -63,6 +71,9 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // LAYER 0: THE ABYSSAL BACKGROUND (Video/Atmosphere)
           const BackgroundVideo(),
+
+          // LAYER 0.5: AMBIENT PARTICLES
+          AmbientParticles(realm: realm, color: accentColor),
 
           // LAYER 1: READABILITY VIGNETTE
           Positioned.fill(
@@ -101,14 +112,18 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-      // CUSTOM NAVIGATION
-      bottomNavigationBar: DevilNavBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-      ),
+      // CUSTOM NAVIGATION (Hidden during focus mode lock-in)
+      bottomNavigationBar: focusProvider.isRunning
+          ? null
+          : DevilNavBar(
+              currentIndex: _currentIndex,
+              onTap: _onTabTapped,
+            ),
 
-      // FAB: Only visible on the Ledger (Home) tab
-      floatingActionButton: _currentIndex == 0 ? _buildFAB(accentColor) : null,
+      // FAB: Only visible on the Ledger (Home) tab when not focusing
+      floatingActionButton: (_currentIndex == 0 && !focusProvider.isRunning)
+          ? _buildFAB(accentColor)
+          : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }

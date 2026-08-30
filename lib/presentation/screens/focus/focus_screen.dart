@@ -12,6 +12,8 @@ import '../../providers/focus_provider.dart';
 import '../home/widgets/eye_widget.dart';
 import '../home/widgets/glass_card.dart';
 import 'widgets/ritual_result_card.dart';
+import 'widgets/timer_display.dart';
+import '../../widgets/ambient_particles.dart';
 
 class FocusScreen extends StatefulWidget {
   final Habit? habit;
@@ -69,12 +71,13 @@ class _FocusScreenState extends State<FocusScreen>
 
     final progress = focusProvider.progress;
     final isFinished = focusProvider.isFinished;
+    final isRunning = focusProvider.isRunning;
     final realm = devilProvider.currentRealm;
 
     // CHROMATIC DRIFT: Color intensifies and shifts based on the current soul realm
     Color baseAccent = realm == "HEAVEN"
         ? Colors.amberAccent
-        : Colors.redAccent;
+        : (realm == "HELL" ? Colors.redAccent : Colors.cyanAccent);
     Color dynamicAccent = Color.lerp(
       baseAccent.withOpacity(0.3),
       baseAccent,
@@ -88,29 +91,36 @@ class _FocusScreenState extends State<FocusScreen>
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // 1. THE PERIPHERAL VOID
-            _buildPeripheralVoid(progress),
+            // Ambient drift particles matching the active realm
+            AmbientParticles(realm: realm, color: baseAccent),
 
-            // 2. THE GEOMETRIC ORBIT (Animated Shards)
-            _buildAnimatedOrbit(progress, dynamicAccent),
+            if (isRunning) ...[
+              // 1. THE PERIPHERAL VOID
+              _buildPeripheralVoid(progress),
 
-            // 3. THE VIGILANT EYE
-            _buildEyeCore(progress, dynamicAccent),
+              // 2. THE GEOMETRIC ORBIT (Animated Shards)
+              _buildAnimatedOrbit(progress, dynamicAccent),
 
-            // 4. THE INTERFACE (Only active during the countdown)
-            if (!isFinished)
+              // 3. THE VIGILANT EYE & TIMER
+              _buildEyeCore(progress, dynamicAccent),
+
+              // 4. THE INTERFACE (Only active during the countdown)
               SafeArea(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildModernHeader(dynamicAccent, progress),
+                    _buildModernHeader(dynamicAccent, progress, focusProvider),
                     _buildModernFooter(dynamicAccent, focusProvider, progress),
                   ],
                 ),
               ),
-
-            // 5. THE RESULT OVERLAY (Triggered by FocusProvider.isFinished)
-            if (isFinished) _buildSuccessOverlay(focusProvider),
+            ] else if (isFinished) ...[
+              // 5. THE RESULT OVERLAY (Triggered by FocusProvider.isFinished)
+              _buildSuccessOverlay(focusProvider),
+            ] else ...[
+              // THE CHAMBER OF WILLS: Idle list when no timer is active
+              _buildChamberOfWills(context, devilProvider, focusProvider, baseAccent),
+            ],
           ],
         ),
       ),
@@ -158,7 +168,7 @@ class _FocusScreenState extends State<FocusScreen>
       mainAxisSize: MainAxisSize.min,
       children: [
         const DevilEye(),
-        const SizedBox(height: 28),
+        const SizedBox(height: 20),
         Text(
           progress >= 1.0 ? "RITUAL SEALED" : "TRANSCENDING",
           style: GoogleFonts.cinzel(
@@ -168,11 +178,17 @@ class _FocusScreenState extends State<FocusScreen>
             fontWeight: FontWeight.w900,
           ),
         ),
+        const SizedBox(height: 16),
+        TimerDisplay(
+          pulseController: _pulseController,
+          glowColor: accent,
+        ),
       ],
     );
   }
 
-  Widget _buildModernHeader(Color accent, double progress) {
+  Widget _buildModernHeader(Color accent, double progress, FocusProvider focus) {
+    final habit = focus.activeHabit;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
       child: GlassCard(
@@ -184,7 +200,7 @@ class _FocusScreenState extends State<FocusScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              "INTENT: ${widget.habit?.title.toUpperCase() ?? 'VOID'}",
+              "INTENT: ${habit?.title.toUpperCase() ?? 'VOID'}",
               style: GoogleFonts.spaceMono(
                 color: Colors.white,
                 fontSize: 11,
@@ -213,6 +229,7 @@ class _FocusScreenState extends State<FocusScreen>
     FocusProvider focus,
     double progress,
   ) {
+    final habit = focus.activeHabit;
     return Padding(
       padding: const EdgeInsets.only(bottom: 50, left: 30, right: 30),
       child: Column(
@@ -223,7 +240,7 @@ class _FocusScreenState extends State<FocusScreen>
             blur: 8,
             padding: const EdgeInsets.all(16),
             child: Text(
-              "“${widget.habit?.punishmentThreat.toUpperCase() ?? 'THE VOID WAITS.'}”",
+              "“${habit?.punishmentThreat.toUpperCase() ?? 'THE VOID WAITS.'}”",
               textAlign: TextAlign.center,
               style: GoogleFonts.spaceMono(
                 color: Colors.white38,
@@ -249,7 +266,9 @@ class _FocusScreenState extends State<FocusScreen>
       onLongPressEnd: (_) => setState(() => _isHolding = false),
       onLongPress: () {
         focus.stopFocusEarly(context.read<DevilProvider>());
-        Navigator.pop(context);
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
       },
       child: AnimatedScale(
         duration: const Duration(milliseconds: 250),
@@ -290,19 +309,174 @@ class _FocusScreenState extends State<FocusScreen>
   }
 
   Widget _buildSuccessOverlay(FocusProvider focus) {
-    // CRITICAL: This fills the viewport to bridge the Eye Screen to the Success Reveal
+    final habit = focus.activeHabit;
     return Positioned.fill(
       child: RitualResultCard(
-        habitTitle: widget.habit?.title ?? "THE VOW",
+        habitTitle: habit?.title ?? "THE VOW",
         soulShift: 12,
         onDismiss: () {
           focus.dismissResult();
-          Navigator.pop(context);
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
         },
       ),
     );
   }
+
+  Widget _buildChamberOfWills(
+      BuildContext context,
+      DevilProvider devil,
+      FocusProvider focus,
+      Color accent) {
+    final uncompleted = devil.habits.where((h) => !h.isCompletedToday).toList();
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "RITUAL CHAMBER",
+              style: GoogleFonts.cinzel(
+                color: accent,
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 4,
+                shadows: [
+                  Shadow(color: accent.withOpacity(0.4), blurRadius: 10)
+                ],
+              ),
+            ),
+            Text(
+              "COMMENCE A SEALED VOW",
+              style: GoogleFonts.spaceMono(
+                color: Colors.white30,
+                fontSize: 10,
+                letterSpacing: 2,
+              ),
+            ),
+            const SizedBox(height: 30),
+            Expanded(
+              child: uncompleted.isEmpty
+                  ? _buildEmptyChamber(accent)
+                  : ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: uncompleted.length,
+                      itemBuilder: (context, index) {
+                        final habit = uncompleted[index];
+                        return _buildWillCard(
+                            context, habit, devil, focus, accent);
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWillCard(
+      BuildContext context,
+      dynamic habit,
+      DevilProvider devil,
+      FocusProvider focus,
+      Color accent) {
+    final minutes = habit.targetDurationSeconds ~/ 60;
+    final displayAccent = habit.isBloodOath ? Colors.redAccent : accent;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: GlassCard(
+        accentColor: displayAccent,
+        opacity: 0.08,
+        blur: 16,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: () {
+            HapticFeedback.heavyImpact();
+            focus.startFocus(habit, devil);
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: displayAccent.withOpacity(0.05),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    habit.isBloodOath ? Icons.water_drop : Icons.hourglass_empty,
+                    color: displayAccent,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        habit.title.toUpperCase(),
+                        style: GoogleFonts.cinzel(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "DURATION: $minutes MIN | THREAT: ${habit.punishmentThreat}",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.spaceMono(
+                          color: Colors.white30,
+                          fontSize: 9,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: displayAccent.withOpacity(0.3),
+                  size: 14,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyChamber(Color accent) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.all_inclusive, color: accent.withOpacity(0.1), size: 80),
+          const SizedBox(height: 20),
+          Text(
+            "ALL PACTS COMPLETED TODAY.\nTHE VOID RESTS.",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.cinzel(
+              color: accent.withOpacity(0.4),
+              letterSpacing: 2,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
 
 // --- RITUAL GEOMETRY PAINTER ---
 class OrbitPainter extends CustomPainter {

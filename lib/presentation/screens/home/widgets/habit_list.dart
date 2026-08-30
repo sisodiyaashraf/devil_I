@@ -66,7 +66,7 @@ class HabitList extends StatelessWidget {
                 },
                 child: Column(
                   children: [
-                    _buildHabitTile(habit, doneToday, effectiveAccent),
+                    _buildHabitTile(habit, doneToday, effectiveAccent, provider),
                     if (!doneToday)
                       _buildFocusButton(context, habit, effectiveAccent),
                   ],
@@ -81,7 +81,7 @@ class HabitList extends StatelessWidget {
 
   // --- COMPONENT HELPERS ---
 
-  Widget _buildHabitTile(dynamic habit, bool done, Color accent) {
+  Widget _buildHabitTile(dynamic habit, bool done, Color accent, DevilProvider provider) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       leading: Container(
@@ -135,7 +135,15 @@ class HabitList extends StatelessWidget {
           ],
         ),
       ),
-      trailing: _buildCompletionIcon(done, accent),
+      trailing: GestureDetector(
+        onTap: () {
+          if (!done) {
+            HapticFeedback.heavyImpact();
+            provider.earnVirtue(habit);
+          }
+        },
+        child: _buildCompletionIcon(done, accent),
+      ),
     );
   }
 
