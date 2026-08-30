@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'core/theme.dart';
 import 'data/repositories/story_repository.dart';
 import 'presentation/providers/story_provider.dart';
+import 'presentation/screens/story_screen.dart';
 
 void main() {
   runApp(const WhispersApp());
@@ -23,17 +24,7 @@ class WhispersApp extends StatelessWidget {
         title: 'Whispers',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.dark,
-        home: const Scaffold(
-          body: Center(
-            child: Text(
-              'Whispers',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 20.0,
-              ),
-            ),
-          ),
-        ),
+        home: const StoryScreen(),
       ),
     );
   }
