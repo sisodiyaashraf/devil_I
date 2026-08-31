@@ -21,7 +21,7 @@ class MockStoryRepository extends StoryRepository {
   }
 }
 
-class MockAudioService extends AudioService {
+class MockAudioService implements AudioService {
   bool _isMuted = false;
 
   @override

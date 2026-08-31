@@ -30,7 +30,7 @@ class TestStoryRepository extends StoryRepository {
   }
 }
 
-class MockAudioService extends AudioService {
+class MockAudioService implements AudioService {
   bool _isMuted = false;
   String? lastStingCue;
   int playAmbientCount = 0;
@@ -55,12 +55,16 @@ class MockAudioService extends AudioService {
   }
 
   @override
+  Future<void> stopAmbient() async {}
+
+  @override
   Future<void> playSting(String? cueKey) async {
     lastStingCue = cueKey;
   }
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() {
     SharedPreferences.setMockInitialValues({});
   });

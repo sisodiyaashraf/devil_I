@@ -16,11 +16,17 @@ class MockStoryRepository extends StoryRepository {
   }
 }
 
-class MockAudioService extends AudioService {
+class MockAudioService implements AudioService {
+  @override
+  bool get isMuted => false;
   @override
   Future<void> loadMuteState() async {}
   @override
+  Future<void> toggleMute() async {}
+  @override
   Future<void> playAmbient() async {}
+  @override
+  Future<void> stopAmbient() async {}
   @override
   Future<void> playSting(String? cueKey) async {}
 }
