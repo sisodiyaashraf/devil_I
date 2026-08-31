@@ -140,7 +140,7 @@ void main() {
   test('StoryProvider triggers audio loading and stings', () async {
     final repository = TestStoryRepository();
     final audioService = MockAudioService();
-    final provider = StoryProvider(repository, audioService);
+    final provider = StoryProvider(repository, audioService, MockSaveRepository());
 
     await provider.loadStory();
     expect(audioService.loadMuteStateCount, 1);

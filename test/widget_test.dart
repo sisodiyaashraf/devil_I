@@ -26,7 +26,18 @@ void main() {
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-    // Wait for the loading indicator to disappear (the story loads asynchronously)
+    // Wait for the StartScreen checking phase to finish
+    while (tester.any(find.byType(CircularProgressIndicator))) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    // Verify we are on StartScreen and tap the BEGIN button
+    final beginButton = find.text('BEGIN');
+    expect(beginButton, findsOneWidget);
+    await tester.tap(beginButton);
+
+    // Wait for loadStory to trigger another progress indicator and complete loading
+    await tester.pump();
     while (tester.any(find.byType(CircularProgressIndicator))) {
       await tester.pump(const Duration(milliseconds: 50));
     }
