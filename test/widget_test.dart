@@ -26,6 +26,12 @@ void main() {
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
+    // Wait for the loading indicator to disappear (the story loads asynchronously)
+    while (tester.any(find.byType(CircularProgressIndicator))) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    // Fast-forward 3 seconds to complete the RevealingText character reveal animation
     await tester.pump(const Duration(seconds: 3));
     await tester.pump();
 
