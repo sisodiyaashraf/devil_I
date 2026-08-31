@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/services/audio_service.dart';
 import 'core/theme.dart';
+import 'data/repositories/save_repository.dart';
 import 'data/repositories/story_repository.dart';
 import 'presentation/providers/story_provider.dart';
-import 'presentation/screens/story_screen.dart';
+import 'presentation/screens/start_screen.dart';
 
 void main() {
   runApp(const WhispersApp());
@@ -21,14 +22,15 @@ class WhispersApp extends StatelessWidget {
           create: (_) => StoryProvider(
             StoryRepository(),
             AudioService(),
-          )..loadStory(),
+            SaveRepository(),
+          ),
         ),
       ],
       child: MaterialApp(
         title: 'Whispers',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.dark,
-        home: const StoryScreen(),
+        home: const StartScreen(),
       ),
     );
   }
