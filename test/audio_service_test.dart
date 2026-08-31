@@ -4,11 +4,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whispers/core/constants.dart';
 import 'package:whispers/core/services/audio_service.dart';
+import 'package:whispers/data/repositories/save_repository.dart';
 import 'package:whispers/data/repositories/story_repository.dart';
 import 'package:whispers/domain/entities/story_choice.dart';
 import 'package:whispers/domain/entities/story_node.dart';
 import 'package:whispers/presentation/providers/story_provider.dart';
 import 'package:whispers/presentation/widgets/mute_toggle_button.dart';
+
+class MockSaveRepository implements SaveRepository {
+  @override
+  Future<void> saveProgress(String nodeId, int corruptionLevel) async {}
+
+  @override
+  Future<Map<String, dynamic>?> loadProgress() async => null;
+
+  @override
+  Future<void> clearProgress() async {}
+}
 
 class TestStoryRepository extends StoryRepository {
   @override
