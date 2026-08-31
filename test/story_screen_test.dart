@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whispers/core/services/audio_service.dart';
 import 'package:whispers/data/repositories/story_repository.dart';
 import 'package:whispers/domain/entities/story_choice.dart';
 import 'package:whispers/domain/entities/story_node.dart';
@@ -18,6 +19,30 @@ class MockStoryRepository extends StoryRepository {
     await Future.delayed(const Duration(milliseconds: 50));
     return mockNodes;
   }
+}
+
+class MockAudioService extends AudioService {
+  bool _isMuted = false;
+
+  @override
+  bool get isMuted => _isMuted;
+
+  @override
+  Future<void> loadMuteState() async {}
+
+  @override
+  Future<void> toggleMute() async {
+    _isMuted = !_isMuted;
+  }
+
+  @override
+  Future<void> playAmbient() async {}
+
+  @override
+  Future<void> stopAmbient() async {}
+
+  @override
+  Future<void> playSting(String? cueKey) async {}
 }
 
 void main() {
@@ -43,7 +68,8 @@ void main() {
 
   testWidgets('StoryScreen renders and behaves correctly', (WidgetTester tester) async {
     final repository = MockStoryRepository(testNodes);
-    final provider = StoryProvider(repository);
+    final audioService = MockAudioService();
+    final provider = StoryProvider(repository, audioService);
 
     await tester.pumpWidget(
       MaterialApp(

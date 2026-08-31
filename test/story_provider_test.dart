@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:whispers/core/services/audio_service.dart';
 import 'package:whispers/data/repositories/story_repository.dart';
 import 'package:whispers/domain/entities/story_choice.dart';
 import 'package:whispers/domain/entities/story_node.dart';
@@ -13,6 +14,15 @@ class MockStoryRepository extends StoryRepository {
   Future<Map<String, StoryNode>> loadChapter(String assetPath) async {
     return mockNodes;
   }
+}
+
+class MockAudioService extends AudioService {
+  @override
+  Future<void> loadMuteState() async {}
+  @override
+  Future<void> playAmbient() async {}
+  @override
+  Future<void> playSting(String? cueKey) async {}
 }
 
 void main() {
@@ -43,7 +53,7 @@ void main() {
 
   test('StoryProvider initial state and loading', () async {
     final repository = MockStoryRepository(testNodes);
-    final provider = StoryProvider(repository);
+    final provider = StoryProvider(repository, MockAudioService());
 
     expect(provider.isLoading, isFalse);
     expect(provider.currentNode, isNull);
@@ -61,7 +71,7 @@ void main() {
 
   test('StoryProvider selectChoice and corruption updates', () async {
     final repository = MockStoryRepository(testNodes);
-    final provider = StoryProvider(repository);
+    final provider = StoryProvider(repository, MockAudioService());
     await provider.loadStory();
 
     provider.selectChoice(provider.currentNode!.choices[0]);

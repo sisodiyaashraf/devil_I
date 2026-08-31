@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/story_provider.dart';
 import '../widgets/choice_button.dart';
 import '../widgets/revealing_text.dart';
+import '../widgets/mute_toggle_button.dart';
 
 import '../widgets/glitch_overlay.dart';
 
@@ -52,48 +53,59 @@ class _StoryScreenState extends State<StoryScreen> {
         corruptionLevel: provider.corruptionLevel,
         forceTrigger: node.glitchTrigger,
         child: SafeArea(
-          child: Padding(
-            padding: padding,
-            child: Column(
-              children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      RevealingText(
-                        key: ValueKey(node.id),
-                        text: node.text,
-                        onComplete: () {
-                          setState(() => _textRevealed = true);
-                        },
+          child: Stack(
+            children: [
+              Padding(
+                padding: padding,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            RevealingText(
+                              key: ValueKey(node.id),
+                              text: node.text,
+                              onComplete: () {
+                                setState(() => _textRevealed = true);
+                              },
+                            ),
+                          ],
+                        ),
                       ),
+                    ),
+                    if (_textRevealed) ...[
+                      const SizedBox(height: 24.0),
+                      if (provider.isDeadEnd)
+                        _buildDeadEndView(context, provider, isTablet)
+                      else
+                        ...node.choices.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final choice = entry.value;
+                          return ChoiceButton(
+                            label: choice.label,
+                            index: index,
+                            onTap: () => provider.selectChoice(choice),
+                          );
+                        }),
                     ],
-                  ),
+                  ],
                 ),
               ),
-              if (_textRevealed) ...[
-                const SizedBox(height: 24.0),
-                if (provider.isDeadEnd)
-                  _buildDeadEndView(context, provider, isTablet)
-                else
-                  ...node.choices.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final choice = entry.value;
-                    return ChoiceButton(
-                      label: choice.label,
-                      index: index,
-                      onTap: () => provider.selectChoice(choice),
-                    );
-                  }),
-              ],
+              Positioned(
+                top: 8.0,
+                right: 8.0,
+                child: MuteToggleButton(
+                  audioService: provider.audioService,
+                ),
+              ),
             ],
           ),
         ),
       ),
-    ),
-  );
+    );
   }
 
   Widget _buildDeadEndView(

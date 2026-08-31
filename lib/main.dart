@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'core/services/audio_service.dart';
 import 'core/theme.dart';
 import 'data/repositories/story_repository.dart';
 import 'presentation/providers/story_provider.dart';
@@ -17,7 +18,10 @@ class WhispersApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => StoryProvider(StoryRepository())..loadStory(),
+          create: (_) => StoryProvider(
+            StoryRepository(),
+            AudioService(),
+          )..loadStory(),
         ),
       ],
       child: MaterialApp(
