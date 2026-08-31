@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:whispers/core/services/audio_service.dart';
+import 'package:whispers/data/repositories/save_repository.dart';
 import 'package:whispers/data/repositories/story_repository.dart';
 import 'package:whispers/domain/entities/story_choice.dart';
 import 'package:whispers/domain/entities/story_node.dart';
@@ -31,6 +32,32 @@ class MockAudioService implements AudioService {
   Future<void> playSting(String? cueKey) async {}
 }
 
+class MockSaveRepository implements SaveRepository {
+  String? savedNodeId;
+  int savedCorruption = 0;
+
+  @override
+  Future<void> saveProgress(String nodeId, int corruptionLevel) async {
+    savedNodeId = nodeId;
+    savedCorruption = corruptionLevel;
+  }
+
+  @override
+  Future<Map<String, dynamic>?> loadProgress() async {
+    if (savedNodeId == null) return null;
+    return {
+      'nodeId': savedNodeId!,
+      'corruptionLevel': savedCorruption,
+    };
+  }
+
+  @override
+  Future<void> clearProgress() async {
+    savedNodeId = null;
+    savedCorruption = 0;
+  }
+}
+
 void main() {
   late Map<String, StoryNode> testNodes;
 
@@ -59,7 +86,7 @@ void main() {
 
   test('StoryProvider initial state and loading', () async {
     final repository = MockStoryRepository(testNodes);
-    final provider = StoryProvider(repository, MockAudioService());
+    final provider = StoryProvider(repository, MockAudioService(), MockSaveRepository());
 
     expect(provider.isLoading, isFalse);
     expect(provider.currentNode, isNull);
@@ -77,7 +104,7 @@ void main() {
 
   test('StoryProvider selectChoice and corruption updates', () async {
     final repository = MockStoryRepository(testNodes);
-    final provider = StoryProvider(repository, MockAudioService());
+    final provider = StoryProvider(repository, MockAudioService(), MockSaveRepository());
     await provider.loadStory();
 
     provider.selectChoice(provider.currentNode!.choices[0]);
@@ -95,5 +122,38 @@ void main() {
     expect(provider.currentNode?.id, 'bedroom_trap');
     expect(provider.corruptionLevel, 12);
     expect(provider.history, ['start', 'bedroom_trap']);
+  });
+
+  test('StoryProvider saves progress and continues from save correctly', () async {
+    final repository = MockStoryRepository(testNodes);
+    final saveRepository = MockSaveRepository();
+    final provider = StoryProvider(repository, MockAudioService(), saveRepository);
+
+    // Initial state: no save
+    expect(await provider.hasSavedProgress(), isFalse);
+
+    await provider.loadStory();
+    expect(provider.currentNode?.id, 'start');
+
+    // Make choice which should trigger progress saving
+    provider.selectChoice(provider.currentNode!.choices[0]);
+    expect(saveRepository.savedNodeId, 'corridor_end');
+    expect(saveRepository.savedCorruption, 3);
+    expect(await provider.hasSavedProgress(), isTrue);
+
+    // Re-instantiate provider using the same save repository to simulate app restart
+    final providerRestart = StoryProvider(repository, MockAudioService(), saveRepository);
+    expect(await providerRestart.hasSavedProgress(), isTrue);
+
+    await providerRestart.continueFromSave();
+    expect(providerRestart.currentNode?.id, 'corridor_end');
+    expect(providerRestart.corruptionLevel, 3);
+    expect(providerRestart.history, ['corridor_end']);
+
+    // Resetting should wipe progress
+    providerRestart.reset();
+    expect(saveRepository.savedNodeId, isNull);
+    expect(saveRepository.savedCorruption, 0);
+    expect(await providerRestart.hasSavedProgress(), isFalse);
   });
 }

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whispers/core/services/audio_service.dart';
+import 'package:whispers/data/repositories/save_repository.dart';
 import 'package:whispers/data/repositories/story_repository.dart';
 import 'package:whispers/domain/entities/story_choice.dart';
 import 'package:whispers/domain/entities/story_node.dart';
@@ -45,6 +46,17 @@ class MockAudioService implements AudioService {
   Future<void> playSting(String? cueKey) async {}
 }
 
+class MockSaveRepository implements SaveRepository {
+  @override
+  Future<void> saveProgress(String nodeId, int corruptionLevel) async {}
+
+  @override
+  Future<Map<String, dynamic>?> loadProgress() async => null;
+
+  @override
+  Future<void> clearProgress() async {}
+}
+
 void main() {
   late Map<String, StoryNode> testNodes;
 
@@ -69,7 +81,7 @@ void main() {
   testWidgets('StoryScreen renders and behaves correctly', (WidgetTester tester) async {
     final repository = MockStoryRepository(testNodes);
     final audioService = MockAudioService();
-    final provider = StoryProvider(repository, audioService);
+    final provider = StoryProvider(repository, audioService, MockSaveRepository());
 
     await tester.pumpWidget(
       MaterialApp(
