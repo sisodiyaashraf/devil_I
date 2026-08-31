@@ -10,7 +10,8 @@ void main() {
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
 
     expect(find.textContaining('floorboards'), findsOneWidget);
   });
