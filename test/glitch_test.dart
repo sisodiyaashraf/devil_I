@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:whispers/presentation/widgets/glitch_overlay.dart';
 
 void main() {
-  testWidgets('GlitchOverlay triggers visual glitches', (WidgetTester tester) async {
+  testWidgets('GlitchOverlay triggers visual glitches', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
