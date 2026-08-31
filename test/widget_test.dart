@@ -35,6 +35,9 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
     await tester.pump();
 
+    final textWidgets = find.byType(Text).evaluate().map((e) => (e.widget as Text).data).toList();
+    print('Found text widgets: $textWidgets');
+
     expect(find.textContaining('floorboards'), findsOneWidget);
   });
 }
