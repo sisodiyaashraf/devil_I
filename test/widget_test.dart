@@ -33,10 +33,9 @@ void main() {
 
     // Fast-forward 3 seconds to complete the RevealingText character reveal animation
     await tester.pump(const Duration(seconds: 3));
-    await tester.pump();
 
-    final textWidgets = find.byType(Text).evaluate().map((e) => (e.widget as Text).data).toList();
-    print('Found text widgets: $textWidgets');
+    // Pump another 500ms to let the ChoiceButton entry delay timers (up to 150ms) complete
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.textContaining('floorboards'), findsOneWidget);
   });
