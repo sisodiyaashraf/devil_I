@@ -4,7 +4,8 @@ import '../../core/constants.dart';
 class EndingRepository {
   Future<void> recordEnding(String nodeId) async {
     final prefs = await SharedPreferences.getInstance();
-    final currentList = prefs.getStringList(AppConstants.unlockedEndingsKey) ?? [];
+    final currentList =
+        prefs.getStringList(AppConstants.unlockedEndingsKey) ?? [];
     final unlockedSet = currentList.toSet();
 
     if (!unlockedSet.contains(nodeId)) {
@@ -18,7 +19,8 @@ class EndingRepository {
 
   Future<Set<String>> getUnlockedEndingIds() async {
     final prefs = await SharedPreferences.getInstance();
-    final currentList = prefs.getStringList(AppConstants.unlockedEndingsKey) ?? [];
+    final currentList =
+        prefs.getStringList(AppConstants.unlockedEndingsKey) ?? [];
     return currentList.toSet();
   }
 }
