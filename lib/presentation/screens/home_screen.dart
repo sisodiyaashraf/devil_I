@@ -65,7 +65,15 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mounted) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const StoryScreen()),
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 700),
+          pageBuilder: (_, animation, __) => const StoryScreen(),
+          transitionsBuilder: (_, animation, __, child) {
+            final fade = CurvedAnimation(parent: animation, curve: Curves.easeInOut);
+            final scale = Tween<double>(begin: 0.98, end: 1.0).animate(fade);
+            return FadeTransition(opacity: fade, child: ScaleTransition(scale: scale, child: child));
+          },
+        ),
       ).then((_) => _loadState());
     }
   }

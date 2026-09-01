@@ -1,19 +1,24 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/glitch_utils.dart';
+import '../../core/services/haptics_service.dart';
+import '../providers/story_provider.dart';
 import 'fake_system_dialog.dart';
 
 class GlitchOverlay extends StatefulWidget {
   final Widget child;
   final int corruptionLevel;
   final bool forceTrigger;
+  final HapticsService? hapticsService;
 
   const GlitchOverlay({
     super.key,
     required this.child,
     required this.corruptionLevel,
     required this.forceTrigger,
+    this.hapticsService,
   });
 
   @override
@@ -55,6 +60,10 @@ class _GlitchOverlayState extends State<GlitchOverlay> {
   void _triggerGlitch() {
     _hasTriggeredForThisNode = true;
     _effectTimer?.cancel();
+
+    final provider = context.read<StoryProvider>();
+    final haptics = widget.hapticsService ?? provider.hapticsService;
+    haptics.heavyJolt(enabled: !provider.audioService.isMuted);
 
     final effect = GlitchUtils.pickEffect();
     setState(() {

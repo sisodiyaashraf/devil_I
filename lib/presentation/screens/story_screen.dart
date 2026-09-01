@@ -52,6 +52,7 @@ class _StoryScreenState extends State<StoryScreen> {
         key: ValueKey(node.id),
         corruptionLevel: provider.corruptionLevel,
         forceTrigger: node.glitchTrigger,
+        hapticsService: provider.hapticsService,
         child: SafeArea(
           child: Stack(
             children: [
@@ -63,37 +64,51 @@ class _StoryScreenState extends State<StoryScreen> {
                     SanityMeter(corruptionLevel: provider.corruptionLevel),
                     const SizedBox(height: 16.0),
                     Expanded(
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            RevealingText(
-                              key: ValueKey(node.id),
-                              text: node.text,
-                              onComplete: () {
-                                setState(() => _textRevealed = true);
-                              },
-                            ),
-                          ],
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 500),
+                        switchInCurve: Curves.easeIn,
+                        switchOutCurve: Curves.easeOut,
+                        child: Container(
+                          key: ValueKey(node.id),
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  physics: const BouncingScrollPhysics(),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      RevealingText(
+                                        key: ValueKey(node.id),
+                                        text: node.text,
+                                        onComplete: () {
+                                          if (mounted) setState(() => _textRevealed = true);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              if (_textRevealed) ...[
+                                const SizedBox(height: 24.0),
+                                if (provider.isDeadEnd)
+                                  _buildDeadEndView(context, provider, isTablet)
+                                else
+                                  ...node.choices.asMap().entries.map((entry) {
+                                    final index = entry.key;
+                                    final choice = entry.value;
+                                    return ChoiceButton(
+                                      label: choice.label,
+                                      index: index,
+                                      onTap: () => provider.selectChoice(choice),
+                                    );
+                                  }),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                    if (_textRevealed) ...[
-                      const SizedBox(height: 24.0),
-                      if (provider.isDeadEnd)
-                        _buildDeadEndView(context, provider, isTablet)
-                      else
-                        ...node.choices.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final choice = entry.value;
-                          return ChoiceButton(
-                            label: choice.label,
-                            index: index,
-                            onTap: () => provider.selectChoice(choice),
-                          );
-                        }),
-                    ],
                   ],
                 ),
               ),

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../../core/constants.dart';
 import '../../core/services/audio_service.dart';
+import '../../core/services/haptics_service.dart';
 import '../../data/repositories/ending_repository.dart';
 import '../../data/repositories/save_repository.dart';
 import '../../data/repositories/story_repository.dart';
@@ -16,6 +17,7 @@ class StoryProvider extends ChangeNotifier {
   final AudioService _audioService;
   final SaveRepository _saveRepository;
   final EndingRepository _endingRepository;
+  final HapticsService _hapticsService;
 
   Map<String, StoryNode> _allNodes = {};
   List<Ending> _allEndings = [];
@@ -29,7 +31,9 @@ class StoryProvider extends ChangeNotifier {
     this._audioService,
     this._saveRepository, [
     EndingRepository? endingRepository,
-  ]) : _endingRepository = endingRepository ?? EndingRepository();
+    HapticsService? hapticsService,
+  ])  : _endingRepository = endingRepository ?? EndingRepository(),
+        _hapticsService = hapticsService ?? HapticsService();
 
   StoryNode? get currentNode => _currentNode;
   List<String> get history => List.unmodifiable(_history);
@@ -37,6 +41,7 @@ class StoryProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   AudioService get audioService => _audioService;
   EndingRepository get endingRepository => _endingRepository;
+  HapticsService get hapticsService => _hapticsService;
 
   bool get isDeadEnd => _currentNode?.choices.isEmpty ?? true;
 
@@ -61,6 +66,13 @@ class StoryProvider extends ChangeNotifier {
   }
 
   void selectChoice(StoryChoice choice) {
+    final hapticsEnabled = !_audioService.isMuted;
+    if (choice.isDark) {
+      _hapticsService.heavyJolt(enabled: hapticsEnabled);
+    } else {
+      _hapticsService.lightPulse(enabled: hapticsEnabled);
+    }
+
     _corruptionLevel = calculateCorruption(_corruptionLevel, choice);
 
     final nextNode = _allNodes[choice.nextNodeId];
@@ -73,6 +85,7 @@ class StoryProvider extends ChangeNotifier {
       _saveRepository.saveProgress(nextNode.id, _corruptionLevel);
       if (nextNode.choices.isEmpty) {
         _endingRepository.recordEnding(nextNode.id);
+        _hapticsService.doubleBeat(enabled: hapticsEnabled);
       }
     }
     notifyListeners();
