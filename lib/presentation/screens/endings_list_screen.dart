@@ -113,7 +113,7 @@ class _EndingsListScreenState extends State<EndingsListScreen> {
               fontWeight: FontWeight.w600,
               color: isUnlocked
                   ? AppColors.whisperWhite
-                  : AppColors.fadedText.withOpacity(0.4),
+                  : AppColors.fadedText.withValues(alpha: 0.4),
               letterSpacing: 1.5,
             ),
           ),
@@ -125,7 +125,7 @@ class _EndingsListScreenState extends State<EndingsListScreen> {
               height: 1.4,
               color: isUnlocked
                   ? AppColors.fadedText
-                  : AppColors.fadedText.withOpacity(0.3),
+                  : AppColors.fadedText.withValues(alpha: 0.3),
               fontStyle: isUnlocked ? FontStyle.normal : FontStyle.italic,
             ),
           ),

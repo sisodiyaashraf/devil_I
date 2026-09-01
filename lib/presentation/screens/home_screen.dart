@@ -196,8 +196,8 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
         decoration: BoxDecoration(
-          color: AppColors.surface.withOpacity(0.5),
-          border: Border.all(color: AppColors.fadedText.withOpacity(0.2), width: 0.6),
+          color: AppColors.surface.withValues(alpha: 0.5),
+          border: Border.all(color: AppColors.fadedText.withValues(alpha: 0.2), width: 0.6),
           borderRadius: BorderRadius.circular(2.0),
         ),
         child: Row(

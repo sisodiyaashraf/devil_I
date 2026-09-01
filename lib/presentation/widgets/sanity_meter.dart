@@ -15,7 +15,7 @@ class SanityMeter extends StatelessWidget {
     final clampedCorruption = corruptionLevel.clamp(0, 100);
     final sanityRatio = (100 - clampedCorruption) / 100.0;
     final color = Color.lerp(
-          AppColors.whisperWhite.withOpacity(0.9),
+          AppColors.whisperWhite.withValues(alpha: 0.9),
           AppColors.bloodRed,
           clampedCorruption / 100.0,
         ) ??
