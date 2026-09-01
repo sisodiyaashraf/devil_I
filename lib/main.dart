@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/services/audio_service.dart';
+import 'core/services/haptics_service.dart';
 import 'core/theme.dart';
 import 'data/repositories/ending_repository.dart';
 import 'data/repositories/save_repository.dart';
@@ -25,6 +26,7 @@ class WhispersApp extends StatelessWidget {
             AudioService(),
             SaveRepository(),
             EndingRepository(),
+            HapticsService(),
           ),
         ),
       ],

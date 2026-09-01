@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:whispers/core/services/haptics_service.dart';
 import 'package:whispers/presentation/widgets/glitch_overlay.dart';
+
+class MockHapticsService extends HapticsService {
+  @override
+  Future<void> heavyJolt({bool enabled = true}) async {}
+}
 
 void main() {
   testWidgets('GlitchOverlay triggers visual glitches', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
-      const MaterialApp(
+      MaterialApp(
         home: Scaffold(
           body: GlitchOverlay(
             corruptionLevel: 0,
             forceTrigger: true,
-            child: Text('Test Child Text'),
+            hapticsService: MockHapticsService(),
+            child: const Text('Test Child Text'),
           ),
         ),
       ),
