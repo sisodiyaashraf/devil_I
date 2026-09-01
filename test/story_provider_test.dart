@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:whispers/core/services/audio_service.dart';
+import 'package:whispers/core/services/haptics_service.dart';
 import 'package:whispers/data/repositories/ending_repository.dart';
 import 'package:whispers/data/repositories/save_repository.dart';
 import 'package:whispers/data/repositories/story_repository.dart';
@@ -73,6 +74,27 @@ class MockEndingRepository extends EndingRepository {
   }
 }
 
+class MockHapticsService extends HapticsService {
+  int lightPulseCount = 0;
+  int heavyJoltCount = 0;
+  int doubleBeatCount = 0;
+
+  @override
+  Future<void> lightPulse({bool enabled = true}) async {
+    if (enabled) lightPulseCount++;
+  }
+
+  @override
+  Future<void> heavyJolt({bool enabled = true}) async {
+    if (enabled) heavyJoltCount++;
+  }
+
+  @override
+  Future<void> doubleBeat({bool enabled = true}) async {
+    if (enabled) doubleBeatCount++;
+  }
+}
+
 void main() {
   late Map<String, StoryNode> testNodes;
 
@@ -101,7 +123,13 @@ void main() {
 
   test('StoryProvider initial state and loading', () async {
     final repository = MockStoryRepository(testNodes);
-    final provider = StoryProvider(repository, MockAudioService(), MockSaveRepository(), MockEndingRepository());
+    final provider = StoryProvider(
+      repository,
+      MockAudioService(),
+      MockSaveRepository(),
+      MockEndingRepository(),
+      MockHapticsService(),
+    );
 
     expect(provider.isLoading, isFalse);
     expect(provider.currentNode, isNull);
@@ -120,7 +148,8 @@ void main() {
   test('StoryProvider selectChoice, corruption updates, and records ending on dead end', () async {
     final repository = MockStoryRepository(testNodes);
     final endingRepo = MockEndingRepository();
-    final provider = StoryProvider(repository, MockAudioService(), MockSaveRepository(), endingRepo);
+    final haptics = MockHapticsService();
+    final provider = StoryProvider(repository, MockAudioService(), MockSaveRepository(), endingRepo, haptics);
     await provider.loadStory();
 
     provider.selectChoice(provider.currentNode!.choices[0]);
@@ -129,6 +158,8 @@ void main() {
     expect(provider.history, ['start', 'corridor_end']);
     expect(provider.isDeadEnd, isTrue);
     expect(endingRepo.recordedEndings, contains('corridor_end'));
+    expect(haptics.lightPulseCount, 1);
+    expect(haptics.doubleBeatCount, 1);
 
     provider.reset();
     expect(provider.currentNode?.id, 'start');
@@ -140,12 +171,14 @@ void main() {
     expect(provider.corruptionLevel, 12);
     expect(provider.history, ['start', 'bedroom_trap']);
     expect(endingRepo.recordedEndings, contains('bedroom_trap'));
+    expect(haptics.heavyJoltCount, 1);
   });
 
   test('StoryProvider saves progress and continues from save correctly', () async {
     final repository = MockStoryRepository(testNodes);
     final saveRepository = MockSaveRepository();
-    final provider = StoryProvider(repository, MockAudioService(), saveRepository, MockEndingRepository());
+    final haptics = MockHapticsService();
+    final provider = StoryProvider(repository, MockAudioService(), saveRepository, MockEndingRepository(), haptics);
 
     expect(await provider.hasSavedProgress(), isFalse);
 
@@ -157,7 +190,7 @@ void main() {
     expect(saveRepository.savedCorruption, 3);
     expect(await provider.hasSavedProgress(), isTrue);
 
-    final providerRestart = StoryProvider(repository, MockAudioService(), saveRepository, MockEndingRepository());
+    final providerRestart = StoryProvider(repository, MockAudioService(), saveRepository, MockEndingRepository(), haptics);
     expect(await providerRestart.hasSavedProgress(), isTrue);
 
     await providerRestart.continueFromSave();

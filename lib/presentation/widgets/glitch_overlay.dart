@@ -61,9 +61,13 @@ class _GlitchOverlayState extends State<GlitchOverlay> {
     _hasTriggeredForThisNode = true;
     _effectTimer?.cancel();
 
-    final provider = context.read<StoryProvider>();
-    final haptics = widget.hapticsService ?? provider.hapticsService;
-    haptics.heavyJolt(enabled: !provider.audioService.isMuted);
+    try {
+      final provider = context.read<StoryProvider>();
+      final haptics = widget.hapticsService ?? provider.hapticsService;
+      haptics.heavyJolt(enabled: !provider.audioService.isMuted);
+    } catch (_) {
+      widget.hapticsService?.heavyJolt(enabled: true);
+    }
 
     final effect = GlitchUtils.pickEffect();
     setState(() {
