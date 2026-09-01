@@ -4,12 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whispers/core/services/audio_service.dart';
+import 'package:whispers/data/repositories/ending_repository.dart';
 import 'package:whispers/data/repositories/save_repository.dart';
 import 'package:whispers/data/repositories/story_repository.dart';
-import 'package:whispers/domain/entities/story_choice.dart';
 import 'package:whispers/domain/entities/story_node.dart';
 import 'package:whispers/presentation/providers/story_provider.dart';
-import 'package:whispers/presentation/screens/start_screen.dart';
+import 'package:whispers/presentation/screens/home_screen.dart';
 
 class MockStoryRepository extends StoryRepository {
   @override
@@ -65,10 +65,20 @@ class MockSaveRepository implements SaveRepository {
   }
 }
 
+class MockEndingRepository extends EndingRepository {
+  final Set<String> unlocked;
+  MockEndingRepository([this.unlocked = const {}]);
+
+  @override
+  Future<Set<String>> getUnlockedEndingIds() async => unlocked;
+
+  @override
+  Future<void> recordEnding(String nodeId) async => unlocked.add(nodeId);
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // Mock audioplayers platform channels
   const globalChannel = MethodChannel('xyz.luan/audioplayers.global');
   const playerChannel = MethodChannel('xyz.luan/audioplayers');
 
@@ -86,53 +96,26 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('StartScreen displays Begin option when no save exists', (WidgetTester tester) async {
+  testWidgets('HomeScreen displays title, chapter tile, and endings counter', (WidgetTester tester) async {
     final storyRepo = MockStoryRepository();
     final saveRepo = MockSaveRepository();
-    final provider = StoryProvider(storyRepo, MockAudioService(), saveRepo);
+    final endingRepo = MockEndingRepository();
+    final provider = StoryProvider(storyRepo, MockAudioService(), saveRepo, endingRepo);
 
     await tester.pumpWidget(
       MaterialApp(
         home: ChangeNotifierProvider<StoryProvider>.value(
           value: provider,
-          child: const StartScreen(),
-        ),
-      ),
-    );
-
-    // Initial check progress
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    await tester.pump(const Duration(milliseconds: 100));
-
-    // After loading check completes, Begin button is shown
-    expect(find.text('BEGIN'), findsOneWidget);
-    expect(find.text('Step into the dark'), findsOneWidget);
-    expect(find.text('CONTINUE'), findsNothing);
-    expect(find.text('START OVER'), findsNothing);
-  });
-
-  testWidgets('StartScreen displays Continue and Start Over options when save exists', (WidgetTester tester) async {
-    final storyRepo = MockStoryRepository();
-    final saveRepo = MockSaveRepository()..savedNodeId = 'some_node';
-    final provider = StoryProvider(storyRepo, MockAudioService(), saveRepo);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: ChangeNotifierProvider<StoryProvider>.value(
-          value: provider,
-          child: const StartScreen(),
+          child: const HomeScreen(),
         ),
       ),
     );
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pumpAndSettle();
 
-    // After check completes, Continue and Start Over buttons are shown
-    expect(find.text('BEGIN'), findsNothing);
-    expect(find.text('CONTINUE'), findsOneWidget);
-    expect(find.text('Something remembers where you left off'), findsOneWidget);
-    expect(find.text('START OVER'), findsOneWidget);
-    expect(find.text('Forget everything'), findsOneWidget);
+    expect(find.text('WHISPERS'), findsOneWidget);
+    expect(find.text('The House Above'), findsOneWidget);
+    expect(find.text('Endings Found'), findsOneWidget);
   });
 }
