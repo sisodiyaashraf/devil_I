@@ -3,10 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/story_provider.dart';
 import '../widgets/choice_button.dart';
-import '../widgets/revealing_text.dart';
-import '../widgets/mute_toggle_button.dart';
-
 import '../widgets/glitch_overlay.dart';
+import '../widgets/mute_toggle_button.dart';
+import '../widgets/revealing_text.dart';
+import '../widgets/sanity_meter.dart';
 
 class StoryScreen extends StatefulWidget {
   const StoryScreen({super.key});
@@ -44,7 +44,7 @@ class _StoryScreenState extends State<StoryScreen> {
     final isTablet = media.size.width > 600;
     final padding = EdgeInsets.symmetric(
       horizontal: isTablet ? 48.0 : 24.0,
-      vertical: isTablet ? 60.0 : 36.0,
+      vertical: isTablet ? 40.0 : 24.0,
     );
 
     return Scaffold(
@@ -59,6 +59,9 @@ class _StoryScreenState extends State<StoryScreen> {
                 padding: padding,
                 child: Column(
                   children: [
+                    const SizedBox(height: 28.0),
+                    SanityMeter(corruptionLevel: provider.corruptionLevel),
+                    const SizedBox(height: 16.0),
                     Expanded(
                       child: SingleChildScrollView(
                         physics: const BouncingScrollPhysics(),
