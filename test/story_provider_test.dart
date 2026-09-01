@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:whispers/core/services/audio_service.dart';
+import 'package:whispers/data/repositories/ending_repository.dart';
 import 'package:whispers/data/repositories/save_repository.dart';
 import 'package:whispers/data/repositories/story_repository.dart';
 import 'package:whispers/domain/entities/story_choice.dart';
@@ -58,6 +59,20 @@ class MockSaveRepository implements SaveRepository {
   }
 }
 
+class MockEndingRepository extends EndingRepository {
+  final Set<String> recordedEndings = {};
+
+  @override
+  Future<void> recordEnding(String nodeId) async {
+    recordedEndings.add(nodeId);
+  }
+
+  @override
+  Future<Set<String>> getUnlockedEndingIds() async {
+    return recordedEndings;
+  }
+}
+
 void main() {
   late Map<String, StoryNode> testNodes;
 
@@ -86,7 +101,7 @@ void main() {
 
   test('StoryProvider initial state and loading', () async {
     final repository = MockStoryRepository(testNodes);
-    final provider = StoryProvider(repository, MockAudioService(), MockSaveRepository());
+    final provider = StoryProvider(repository, MockAudioService(), MockSaveRepository(), MockEndingRepository());
 
     expect(provider.isLoading, isFalse);
     expect(provider.currentNode, isNull);
@@ -102,9 +117,10 @@ void main() {
     expect(provider.isDeadEnd, isFalse);
   });
 
-  test('StoryProvider selectChoice and corruption updates', () async {
+  test('StoryProvider selectChoice, corruption updates, and records ending on dead end', () async {
     final repository = MockStoryRepository(testNodes);
-    final provider = StoryProvider(repository, MockAudioService(), MockSaveRepository());
+    final endingRepo = MockEndingRepository();
+    final provider = StoryProvider(repository, MockAudioService(), MockSaveRepository(), endingRepo);
     await provider.loadStory();
 
     provider.selectChoice(provider.currentNode!.choices[0]);
@@ -112,6 +128,7 @@ void main() {
     expect(provider.corruptionLevel, 3);
     expect(provider.history, ['start', 'corridor_end']);
     expect(provider.isDeadEnd, isTrue);
+    expect(endingRepo.recordedEndings, contains('corridor_end'));
 
     provider.reset();
     expect(provider.currentNode?.id, 'start');
@@ -122,27 +139,25 @@ void main() {
     expect(provider.currentNode?.id, 'bedroom_trap');
     expect(provider.corruptionLevel, 12);
     expect(provider.history, ['start', 'bedroom_trap']);
+    expect(endingRepo.recordedEndings, contains('bedroom_trap'));
   });
 
   test('StoryProvider saves progress and continues from save correctly', () async {
     final repository = MockStoryRepository(testNodes);
     final saveRepository = MockSaveRepository();
-    final provider = StoryProvider(repository, MockAudioService(), saveRepository);
+    final provider = StoryProvider(repository, MockAudioService(), saveRepository, MockEndingRepository());
 
-    // Initial state: no save
     expect(await provider.hasSavedProgress(), isFalse);
 
     await provider.loadStory();
     expect(provider.currentNode?.id, 'start');
 
-    // Make choice which should trigger progress saving
     provider.selectChoice(provider.currentNode!.choices[0]);
     expect(saveRepository.savedNodeId, 'corridor_end');
     expect(saveRepository.savedCorruption, 3);
     expect(await provider.hasSavedProgress(), isTrue);
 
-    // Re-instantiate provider using the same save repository to simulate app restart
-    final providerRestart = StoryProvider(repository, MockAudioService(), saveRepository);
+    final providerRestart = StoryProvider(repository, MockAudioService(), saveRepository, MockEndingRepository());
     expect(await providerRestart.hasSavedProgress(), isTrue);
 
     await providerRestart.continueFromSave();
@@ -150,7 +165,6 @@ void main() {
     expect(providerRestart.corruptionLevel, 3);
     expect(providerRestart.history, ['corridor_end']);
 
-    // Resetting should wipe progress
     providerRestart.reset();
     expect(saveRepository.savedNodeId, isNull);
     expect(saveRepository.savedCorruption, 0);
