@@ -1,0 +1,17 @@
+[
+  {
+    "nodeId": "bedroom_trap",
+    "title": "Consumed by the Dark",
+    "description": "You peered directly into the impossible horror, and your gaze was met."
+  },
+  {
+    "nodeId": "locked_in",
+    "title": "Trapped Behind the Bolt",
+    "description": "You barred the exit to keep the night out, only to find yourself sealed inside."
+  },
+  {
+    "nodeId": "escape_attempt",
+    "title": "Fleeting Escape",
+    "description": "You stumbled into the freezing night, leaving behind empty windows and silent walls."
+  }
+]
