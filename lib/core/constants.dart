@@ -6,4 +6,7 @@ class AppConstants {
   static const String saveNodeKey = 'saved_node_id';
   static const String saveCorruptionKey = 'saved_corruption_level';
   static const String muteKey = 'audio_muted';
+  static const String unlockedEndingsKey = 'unlocked_endings';
+  static const String endingsJsonPath = 'assets/story/endings.json';
 }
+
