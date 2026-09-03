@@ -37,6 +37,10 @@ class MockAudioService implements AudioService {
   Future<void> stopAmbient() async {}
   @override
   Future<void> playSting(String? cueKey) async {}
+  @override
+  Future<void> playJumpscare() async {}
+  @override
+  Future<void> playAlarm() async {}
 }
 
 class MockSaveRepository implements SaveRepository {
@@ -114,8 +118,9 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     await tester.pumpAndSettle();
 
-    expect(find.text('WHISPERS'), findsOneWidget);
-    expect(find.text('The House Above'), findsOneWidget);
-    expect(find.text('Endings Found'), findsOneWidget);
+    expect(find.text('PROJECT DEVIL_I'), findsOneWidget);
+    expect(find.text('CONTAINMENT BREACH THETA'), findsOneWidget);
+    expect(find.text('ENDINGS UNLOCKED'), findsOneWidget);
   });
 }
+
