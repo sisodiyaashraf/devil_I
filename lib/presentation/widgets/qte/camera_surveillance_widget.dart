@@ -101,9 +101,10 @@ class _CameraSurveillanceWidgetState extends State<CameraSurveillanceWidget> {
             height: 140,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: isThreatCam ? Colors.red.shade950 : Colors.blueGrey.shade900,
+              color: isThreatCam ? const Color(0xFF1A0202) : Colors.blueGrey.shade900,
               border: Border.all(color: Colors.redAccent.withValues(alpha: 0.8)),
             ),
+
             child: Stack(
               children: [
                 Center(

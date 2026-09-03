@@ -109,9 +109,10 @@ class _FrequencyTunerWidgetState extends State<FrequencyTunerWidget> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.grey.shade950,
+              color: const Color(0xFF0A0A0A),
               border: Border.all(color: isAligned ? Colors.greenAccent : Colors.redAccent),
             ),
+
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
