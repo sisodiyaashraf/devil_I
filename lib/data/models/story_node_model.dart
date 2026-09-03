@@ -8,6 +8,12 @@ class StoryNodeModel extends StoryNode {
     required super.choices,
     super.soundCue,
     super.glitchTrigger,
+    super.jumpscareTrigger,
+    super.qteType,
+    super.threatLevel,
+    super.cameraFeedId,
+    super.qteSuccessNodeId,
+    super.qteFailNodeId,
   });
 
   factory StoryNodeModel.fromJson(Map<String, dynamic> json) {
@@ -27,6 +33,12 @@ class StoryNodeModel extends StoryNode {
       choices: choices,
       soundCue: json['soundCue'] as String?,
       glitchTrigger: json['glitchTrigger'] as bool? ?? false,
+      jumpscareTrigger: json['jumpscareTrigger'] as bool? ?? false,
+      qteType: json['qteType'] as String?,
+      threatLevel: json['threatLevel'] as String?,
+      cameraFeedId: json['cameraFeedId'] as String?,
+      qteSuccessNodeId: json['qteSuccessNodeId'] as String?,
+      qteFailNodeId: json['qteFailNodeId'] as String?,
     );
   }
 
@@ -41,6 +53,13 @@ class StoryNodeModel extends StoryNode {
       }).toList(),
       'soundCue': soundCue,
       'glitchTrigger': glitchTrigger,
+      'jumpscareTrigger': jumpscareTrigger,
+      'qteType': qteType,
+      'threatLevel': threatLevel,
+      'cameraFeedId': cameraFeedId,
+      'qteSuccessNodeId': qteSuccessNodeId,
+      'qteFailNodeId': qteFailNodeId,
     };
   }
 }
+
