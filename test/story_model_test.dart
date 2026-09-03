@@ -27,7 +27,8 @@ void main() {
     final bedroomNode = StoryNodeModel.fromJson(bedroomJson);
     expect(bedroomNode.id, 'bedroom_trap');
     expect(bedroomNode.glitchTrigger, isTrue);
-    expect(bedroomNode.choices, isEmpty);
+    expect(bedroomNode.choices.length, 2);
+
 
     final serialized = bedroomNode.toJson();
     expect(serialized['id'], 'bedroom_trap');
