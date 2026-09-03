@@ -29,7 +29,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
     }
 
-    final chapterTile = find.text('The House Above');
+    final chapterTile = find.text('CONTAINMENT BREACH THETA');
     expect(chapterTile, findsOneWidget);
     await tester.tap(chapterTile);
 
@@ -41,6 +41,7 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
     await tester.pump(const Duration(milliseconds: 500));
 
-    expect(find.textContaining('floorboards'), findsOneWidget);
+    expect(find.textContaining('DEVIL_I'), findsWidgets);
   });
 }
+
