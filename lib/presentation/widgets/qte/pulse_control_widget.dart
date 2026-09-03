@@ -32,7 +32,8 @@ class _PulseControlWidgetState extends State<PulseControlWidget> {
       if (!mounted || _completed) return;
 
       setState(() {
-        _pulseWave = (sin(DateTime.now().millisecondsSinceEpoch / 200) + 1) / 2;
+        _pulseWave = (math.sin(DateTime.now().millisecondsSinceEpoch / 200) + 1) / 2;
+
 
         if (_isHolding) {
           _holdTime += 0.05;

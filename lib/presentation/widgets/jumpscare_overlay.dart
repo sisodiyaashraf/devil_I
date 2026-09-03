@@ -149,11 +149,12 @@ class CyberEntityPainter extends CustomPainter {
 
     // Terrifying Glowing Optics
     final eyePaint = Paint()
-      : color = Colors.redAccent
+      ..color = Colors.redAccent
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15);
 
     canvas.drawCircle(Offset(center.dx - 50, center.dy - 30), 28, eyePaint);
+
     canvas.drawCircle(Offset(center.dx + 50, center.dy - 30), 28, eyePaint);
 
     final innerEye = Paint()..color = Colors.white;
