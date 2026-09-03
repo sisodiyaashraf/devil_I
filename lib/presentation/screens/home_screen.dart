@@ -9,7 +9,9 @@ import '../providers/story_provider.dart';
 import '../widgets/chapter_card.dart';
 import '../widgets/start_option_button.dart';
 import 'endings_list_screen.dart';
+import 'monster_logs_screen.dart';
 import 'story_screen.dart';
+import 'survival_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -30,9 +32,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadState();
-    _flickerTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+    _flickerTimer = Timer.periodic(const Duration(seconds: 3), (_) {
       if (!mounted) return;
-      setState(() => _titleOpacity = 0.65 + math.Random().nextDouble() * 0.2);
+      setState(() => _titleOpacity = 0.5 + math.Random().nextDouble() * 0.3);
       Timer(GlitchUtils.randomFlickerDuration(), () {
         if (mounted) setState(() => _titleOpacity = 1.0);
       });
@@ -66,11 +68,11 @@ class _HomeScreenState extends State<HomeScreen> {
       Navigator.push(
         context,
         PageRouteBuilder(
-          transitionDuration: const Duration(milliseconds: 700),
+          transitionDuration: const Duration(milliseconds: 600),
           pageBuilder: (_, animation, __) => const StoryScreen(),
           transitionsBuilder: (_, animation, __, child) {
             final fade = CurvedAnimation(parent: animation, curve: Curves.easeInOut);
-            final scale = Tween<double>(begin: 0.98, end: 1.0).animate(fade);
+            final scale = Tween<double>(begin: 0.95, end: 1.0).animate(fade);
             return FadeTransition(opacity: fade, child: ScaleTransition(scale: scale, child: child));
           },
         ),
@@ -81,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showContinueDialog(StoryProvider provider) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: Colors.grey.shade950,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(4.0)),
       ),
@@ -91,8 +93,8 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             StartOptionButton(
-              title: 'Continue',
-              subtitle: 'Something remembers where you left off',
+              title: 'Continue Mission',
+              subtitle: 'Resume neural terminal session',
               onTap: () {
                 Navigator.pop(ctx);
                 _launchStory(provider, () => provider.continueFromSave());
@@ -100,8 +102,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 16.0),
             StartOptionButton(
-              title: 'Start Over',
-              subtitle: 'Forget everything',
+              title: 'Reboot System',
+              subtitle: 'Purge current session memory',
               onTap: () {
                 Navigator.pop(ctx);
                 provider.reset();
@@ -118,9 +120,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.black,
         body: Center(
-          child: CircularProgressIndicator(color: AppColors.bloodRed, strokeWidth: 2.0),
+          child: CircularProgressIndicator(color: Colors.redAccent, strokeWidth: 2.0),
         ),
       );
     }
@@ -128,43 +130,46 @@ class _HomeScreenState extends State<HomeScreen> {
     final provider = context.read<StoryProvider>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.black,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
           child: Column(
             children: [
-              const SizedBox(height: 20.0),
+              const SizedBox(height: 10.0),
               AnimatedOpacity(
                 duration: const Duration(milliseconds: 100),
                 opacity: _titleOpacity,
                 child: Text(
-                  'WHISPERS',
-                  style: GoogleFonts.cinzel(
-                    fontSize: 40.0,
+                  'PROJECT DEVIL_I',
+                  style: GoogleFonts.shareTechMono(
+                    fontSize: 32.0,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.bloodRed,
-                    letterSpacing: 8.0,
+                    color: Colors.redAccent,
+                    letterSpacing: 6.0,
+                    shadows: [
+                      const Shadow(blurRadius: 12, color: Colors.redAccent),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 8.0),
+              const SizedBox(height: 6.0),
               Text(
-                'A text horror experience',
-                style: GoogleFonts.cinzel(
-                  fontSize: 12.0,
-                  color: AppColors.fadedText,
+                'CYBERNETIC HORROR CONTAINMENT SYSTEM',
+                style: GoogleFonts.shareTechMono(
+                  fontSize: 11.0,
+                  color: Colors.grey.shade400,
                   letterSpacing: 2.0,
                 ),
               ),
-              const SizedBox(height: 50.0),
+              const SizedBox(height: 30.0),
               Expanded(
                 child: ListView(
                   physics: const BouncingScrollPhysics(),
                   children: [
                     ChapterCard(
-                      chapterNumber: 'CHAPTER 1',
-                      title: 'The House Above',
+                      chapterNumber: 'CAMPAIGN MODE',
+                      title: 'CONTAINMENT BREACH THETA',
                       onTap: () {
                         if (_hasSave) {
                           _showContinueDialog(provider);
@@ -173,13 +178,93 @@ class _HomeScreenState extends State<HomeScreen> {
                         }
                       },
                     ),
-                    const SizedBox(height: 24.0),
+                    const SizedBox(height: 16.0),
+                    _buildMenuCard(
+                      title: 'SURVIVE THE BREACH',
+                      subtitle: 'Endless Arcade QTE Horror Survival',
+                      icon: Icons.shield_sharp,
+                      color: Colors.redAccent,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const SurvivalScreen()),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16.0),
+                    _buildMenuCard(
+                      title: 'CLASSIFIED ARCHIVES',
+                      subtitle: 'Monster Dossier & Security Logs',
+                      icon: Icons.folder_special,
+                      color: Colors.cyanAccent,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const MonsterLogsScreen()),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16.0),
                     _buildEndingsCounterTile(),
                   ],
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(18.0),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade950,
+          border: Border.all(color: color.withValues(alpha: 0.6), width: 1.0),
+          borderRadius: BorderRadius.circular(4.0),
+          boxShadow: [
+            BoxShadow(color: color.withValues(alpha: 0.1), blurRadius: 8),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.shareTechMono(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.shareTechMono(
+                      fontSize: 11.0,
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: color),
+          ],
         ),
       ),
     );
@@ -204,12 +289,20 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Endings Found',
-              style: GoogleFonts.cinzel(fontSize: 14.0, color: AppColors.fadedText, letterSpacing: 1.2),
+              'ENDINGS UNLOCKED',
+              style: GoogleFonts.shareTechMono(
+                fontSize: 13.0,
+                color: AppColors.fadedText,
+                letterSpacing: 1.2,
+              ),
             ),
             Text(
               '$_unlockedEndings / $_totalEndings',
-              style: GoogleFonts.cinzel(fontSize: 16.0, fontWeight: FontWeight.bold, color: AppColors.whisperWhite),
+              style: GoogleFonts.shareTechMono(
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+                color: AppColors.whisperWhite,
+              ),
             ),
           ],
         ),
