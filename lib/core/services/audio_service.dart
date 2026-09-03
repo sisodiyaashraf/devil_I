@@ -15,6 +15,9 @@ class AudioService {
     'creak': 'audio/creak.mp3',
     'heartbeat': 'audio/heartbeat.mp3',
     'silence': 'audio/silence.mp3',
+    'whisper': 'audio/creak.mp3',
+    'jumpscare': 'audio/heartbeat.mp3',
+    'alarm': 'audio/creak.mp3',
   };
 
   Future<void> loadMuteState() async {
@@ -60,8 +63,7 @@ class AudioService {
 
   Future<void> playSting(String? cueKey) async {
     if (cueKey == null) return;
-    final path = _cues[cueKey];
-    if (path == null) return;
+    final path = _cues[cueKey] ?? 'audio/creak.mp3';
 
     try {
       await _stingPlayer.setReleaseMode(ReleaseMode.release);
@@ -69,4 +71,13 @@ class AudioService {
       await _stingPlayer.play(AssetSource(path));
     } catch (_) {}
   }
+
+  Future<void> playJumpscare() async {
+    await playSting('jumpscare');
+  }
+
+  Future<void> playAlarm() async {
+    await playSting('alarm');
+  }
 }
+
