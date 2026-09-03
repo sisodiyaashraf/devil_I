@@ -83,7 +83,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showContinueDialog(StoryProvider provider) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.grey.shade950,
+      backgroundColor: const Color(0xFF0A0A0A),
+
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(4.0)),
       ),
@@ -228,7 +229,8 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(18.0),
         decoration: BoxDecoration(
-          color: Colors.grey.shade950,
+          color: const Color(0xFF0A0A0A),
+
           border: Border.all(color: color.withValues(alpha: 0.6), width: 1.0),
           borderRadius: BorderRadius.circular(4.0),
           boxShadow: [
