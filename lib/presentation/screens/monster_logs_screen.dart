@@ -66,7 +66,8 @@ class MonsterLogsScreen extends StatelessWidget {
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade950,
+                        color: const Color(0xFF0A0A0A),
+
                         border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.6)),
                         borderRadius: BorderRadius.circular(4),
                         boxShadow: [

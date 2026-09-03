@@ -142,7 +142,8 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.red.shade950.withValues(alpha: 0.9),
+        color: const Color(0xFF1A0202).withValues(alpha: 0.9),
+
         border: Border.all(color: Colors.redAccent, width: 2),
         borderRadius: BorderRadius.circular(8),
       ),
