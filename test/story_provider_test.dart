@@ -32,7 +32,12 @@ class MockAudioService implements AudioService {
   Future<void> stopAmbient() async {}
   @override
   Future<void> playSting(String? cueKey) async {}
+  @override
+  Future<void> playJumpscare() async {}
+  @override
+  Future<void> playAlarm() async {}
 }
+
 
 class MockSaveRepository implements SaveRepository {
   String? savedNodeId;
