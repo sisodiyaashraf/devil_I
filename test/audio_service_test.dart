@@ -74,7 +74,14 @@ class MockAudioService implements AudioService {
   Future<void> playSting(String? cueKey) async {
     lastStingCue = cueKey;
   }
+
+  @override
+  Future<void> playJumpscare() async {}
+
+  @override
+  Future<void> playAlarm() async {}
 }
+
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
