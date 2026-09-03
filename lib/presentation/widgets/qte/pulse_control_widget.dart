@@ -56,10 +56,9 @@ class _PulseControlWidgetState extends State<PulseControlWidget> {
     super.dispose();
   }
 
-  double get sin => math.sin;
-
   @override
   Widget build(BuildContext context) {
+
     final progress = (_holdTime / _targetHoldTime).clamp(0.0, 1.0);
 
     return Container(
