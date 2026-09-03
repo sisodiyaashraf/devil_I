@@ -17,10 +17,11 @@ void main() {
     expect(startNode.id, 'start');
     expect(startNode.soundCue, 'creak');
     expect(startNode.glitchTrigger, isFalse);
-    expect(startNode.choices.length, 2);
-    expect(startNode.choices[0].label, 'Investigate the stairs');
-    expect(startNode.choices[0].nextNodeId, 'stairs_up');
-    expect(startNode.choices[0].isDark, isTrue);
+    expect(startNode.choices.length, 3);
+    expect(startNode.choices[0].label, 'Access Thermal Security Feeds');
+    expect(startNode.choices[0].nextNodeId, 'camera_check_node');
+    expect(startNode.choices[0].isDark, isFalse);
+
 
     final bedroomJson = jsonMap['bedroom_trap'] as Map<String, dynamic>;
     final bedroomNode = StoryNodeModel.fromJson(bedroomJson);
