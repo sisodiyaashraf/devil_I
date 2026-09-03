@@ -65,6 +65,27 @@ class StoryProvider extends ChangeNotifier {
     }
   }
 
+  void goToNode(String nodeId) {
+    final nextNode = _allNodes[nodeId];
+    if (nextNode != null) {
+      _currentNode = nextNode;
+      _history.add(nextNode.id);
+      if (nextNode.soundCue != null) {
+        _audioService.playSting(nextNode.soundCue);
+      }
+      if (nextNode.jumpscareTrigger) {
+        _audioService.playJumpscare();
+        _hapticsService.heavyJolt(enabled: !_audioService.isMuted);
+      }
+      _saveRepository.saveProgress(nextNode.id, _corruptionLevel);
+      if (nextNode.choices.isEmpty && nextNode.qteType == null) {
+        _endingRepository.recordEnding(nextNode.id);
+        _hapticsService.doubleBeat(enabled: !_audioService.isMuted);
+      }
+      notifyListeners();
+    }
+  }
+
   void selectChoice(StoryChoice choice) {
     final hapticsEnabled = !_audioService.isMuted;
     if (choice.isDark) {
@@ -75,21 +96,9 @@ class StoryProvider extends ChangeNotifier {
 
     _corruptionLevel = calculateCorruption(_corruptionLevel, choice);
 
-    final nextNode = _allNodes[choice.nextNodeId];
-    if (nextNode != null) {
-      _currentNode = nextNode;
-      _history.add(nextNode.id);
-      if (nextNode.soundCue != null) {
-        _audioService.playSting(nextNode.soundCue);
-      }
-      _saveRepository.saveProgress(nextNode.id, _corruptionLevel);
-      if (nextNode.choices.isEmpty) {
-        _endingRepository.recordEnding(nextNode.id);
-        _hapticsService.doubleBeat(enabled: hapticsEnabled);
-      }
-    }
-    notifyListeners();
+    goToNode(choice.nextNodeId);
   }
+
 
   void reset() {
     _history.clear();
