@@ -116,7 +116,8 @@ void main() {
     expect(find.text('You escaped the dark room.'), findsOneWidget);
     expect(find.text('Run away'), findsNothing);
 
-    expect(find.text('THE END'), findsOneWidget);
-    expect(find.text('Start Over'), findsOneWidget);
+    expect(find.text('TERMINAL LINK LOST'), findsOneWidget);
+    expect(find.text('REBOOT CONTAINMENT SYSTEM'), findsOneWidget);
   });
 }
+
