@@ -43,6 +43,9 @@ class MockAudioService implements AudioService {
   Future<void> playSting(String? cueKey) async {
     lastStingCue = cueKey;
   }
+
+  @override
+  Future<void> dispose() async {}
 }
 
 void main() {

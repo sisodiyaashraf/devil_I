@@ -98,4 +98,11 @@ class AudioService {
       await _stingPlayer.play(AssetSource(path));
     } catch (_) {}
   }
+
+  Future<void> dispose() async {
+    try {
+      await _ambientPlayer.dispose();
+      await _stingPlayer.dispose();
+    } catch (_) {}
+  }
 }

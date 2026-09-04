@@ -148,6 +148,7 @@ class EchoProvider extends ChangeNotifier {
     _corruptionTimer?.cancel();
     _signalSubscription?.cancel();
     _presenceDetector.dispose();
+    _audioService.dispose();
     super.dispose();
   }
 }

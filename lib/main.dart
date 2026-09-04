@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
 import 'data/repositories/dialogue_repository.dart';
@@ -7,7 +8,12 @@ import 'domain/usecases/presence_detector.dart';
 import 'presentation/providers/echo_provider.dart';
 import 'presentation/screens/main_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   runApp(const EchoApp());
 }
 

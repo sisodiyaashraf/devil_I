@@ -3,12 +3,18 @@ import '../../core/constants.dart';
 
 class SaveRepository {
   Future<void> saveSessionCorruption(int level) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(AppConstants.sessionCorruptionKey, level);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(AppConstants.sessionCorruptionKey, level);
+    } catch (_) {}
   }
 
   Future<int> loadLastSessionCorruption() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(AppConstants.sessionCorruptionKey) ?? 0;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getInt(AppConstants.sessionCorruptionKey) ?? 0;
+    } catch (_) {
+      return 0;
+    }
   }
 }
