@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
+import 'data/repositories/save_repository.dart';
+import 'domain/usecases/presence_detector.dart';
+import 'presentation/providers/echo_provider.dart';
 
 void main() {
   runApp(const EchoApp());
@@ -14,8 +17,12 @@ class EchoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // EchoProvider will be added here in Step 3
-        Provider<void>.value(value: null),
+        ChangeNotifierProvider(
+          create: (_) => EchoProvider(
+            presenceDetector: PresenceDetector(),
+            saveRepository: SaveRepository(),
+          )..startSession(),
+        ),
       ],
       child: MaterialApp(
         title: 'ECHO',
@@ -56,16 +63,22 @@ class _PlaceholderScreenState extends State<PlaceholderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Center(
-        child: Text(
-          _visible ? '_' : ' ',
-          style: const TextStyle(
-            fontFamily: 'monospace',
-            fontSize: 32.0,
-            color: AppColors.terminalGreen,
-            fontWeight: FontWeight.bold,
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        context.read<EchoProvider>().registerTouch();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(
+          child: Text(
+            _visible ? '_' : ' ',
+            style: const TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 32.0,
+              color: AppColors.terminalGreen,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),
