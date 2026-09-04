@@ -13,8 +13,9 @@ class EchoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: const [
+      providers: [
         // EchoProvider will be added here in Step 3
+        Provider<void>.value(value: null),
       ],
       child: MaterialApp(
         title: 'ECHO',
