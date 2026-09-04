@@ -14,13 +14,14 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   bool _cursorVisible = true;
   Timer? _cursorTimer;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _cursorTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
       if (mounted) setState(() => _cursorVisible = !_cursorVisible);
     });
@@ -28,8 +29,19 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _cursorTimer?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final echo = context.read<EchoProvider>();
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      echo.pauseSession();
+    } else if (state == AppLifecycleState.resumed) {
+      echo.resumeSession();
+    }
   }
 
   @override

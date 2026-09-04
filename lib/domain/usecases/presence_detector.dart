@@ -12,6 +12,7 @@ class PresenceDetector {
   Timer? _idleCheckTimer;
   DateTime _lastTouch = DateTime.now();
   PresenceSignal _currentSignal = PresenceSignal.idle;
+  bool _isPaused = false;
 
   PresenceDetector({Stream<AccelerometerEvent>? sensorStream})
       : _customSensorStream = sensorStream;
@@ -20,23 +21,46 @@ class PresenceDetector {
   PresenceSignal get currentSignal => _currentSignal;
 
   void start() {
+    _isPaused = false;
     _lastTouch = DateTime.now();
-    _idleCheckTimer?.cancel();
-    _idleCheckTimer = Timer.periodic(
-      const Duration(seconds: 1),
-      (_) => _checkIdle(),
-    );
+    _startIdleTimer();
 
     try {
       final stream = _customSensorStream ?? accelerometerEventStream();
       _accelSubscription = stream.listen(
-        (event) => _onAccelerometerEvent(event.x, event.y, event.z),
+        (event) {
+          if (!_isPaused) {
+            _onAccelerometerEvent(event.x, event.y, event.z);
+          }
+        },
         onError: (_) {},
       );
     } catch (_) {}
   }
 
+  void pause() {
+    _isPaused = true;
+    _idleCheckTimer?.cancel();
+    _accelSubscription?.pause();
+  }
+
+  void resume() {
+    _isPaused = false;
+    _lastTouch = DateTime.now();
+    _startIdleTimer();
+    _accelSubscription?.resume();
+  }
+
+  void _startIdleTimer() {
+    _idleCheckTimer?.cancel();
+    _idleCheckTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _checkIdle(),
+    );
+  }
+
   void registerTouch() {
+    if (_isPaused) return;
     _lastTouch = DateTime.now();
     _emitSignal(PresenceSignal.activelyTouching);
   }
@@ -50,6 +74,7 @@ class PresenceDetector {
   }
 
   void _checkIdle() {
+    if (_isPaused) return;
     final secondsSinceTouch = DateTime.now().difference(_lastTouch).inSeconds;
     if (secondsSinceTouch >= AppConstants.idleTriggerSeconds) {
       _emitSignal(PresenceSignal.idle);
@@ -57,7 +82,7 @@ class PresenceDetector {
   }
 
   void _emitSignal(PresenceSignal signal) {
-    if (_signalController.isClosed) return;
+    if (_signalController.isClosed || _isPaused) return;
     if (_currentSignal != signal) {
       _currentSignal = signal;
       _signalController.add(signal);
@@ -65,6 +90,7 @@ class PresenceDetector {
   }
 
   void dispose() {
+    _isPaused = true;
     _idleCheckTimer?.cancel();
     _accelSubscription?.cancel();
     _signalController.close();

@@ -31,6 +31,7 @@ class _GlitchOverlayState extends State<GlitchOverlay> {
   GlitchEffect? _activeEffect;
   Timer? _effectTimer;
   double _rgbOffset = 0.0;
+  DateTime? _lastGlitchTime;
 
   @override
   void initState() {
@@ -61,6 +62,13 @@ class _GlitchOverlayState extends State<GlitchOverlay> {
   }
 
   void _triggerGlitch({bool isHard = false}) {
+    final now = DateTime.now();
+    if (isHard &&
+        _lastGlitchTime != null &&
+        now.difference(_lastGlitchTime!) < const Duration(milliseconds: 1500)) {
+      return;
+    }
+    _lastGlitchTime = now;
     _effectTimer?.cancel();
     widget.hapticsService?.heavyJolt(enabled: true);
 

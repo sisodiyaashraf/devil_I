@@ -58,11 +58,25 @@ class EchoProvider extends ChangeNotifier {
     _signalSubscription?.cancel();
     _signalSubscription = _presenceDetector.signalStream.listen(_onSignalReceived);
 
+    _startCorruptionTimer();
+  }
+
+  void _startCorruptionTimer() {
     _corruptionTimer?.cancel();
     _corruptionTimer = Timer.periodic(
       const Duration(seconds: AppConstants.corruptionTickIntervalSeconds),
       (_) => _onCorruptionTick(),
     );
+  }
+
+  void pauseSession() {
+    _corruptionTimer?.cancel();
+    _presenceDetector.pause();
+  }
+
+  void resumeSession() {
+    _presenceDetector.resume();
+    _startCorruptionTimer();
   }
 
   void _onSignalReceived(PresenceSignal signal) {
