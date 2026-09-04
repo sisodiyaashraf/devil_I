@@ -58,13 +58,17 @@ class _PlaceholderScreenState extends State<PlaceholderScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Center(
-        child: Text(
-          _visible ? '_' : ' ',
-          style: const TextStyle(
-            fontFamily: 'monospace',
-            fontSize: 32.0,
-            color: AppColors.terminalGreen,
-            fontWeight: FontWeight.bold,
+        child: AnimatedOpacity(
+          opacity: _visible ? 1.0 : 0.0,
+          duration: Duration.zero,
+          child: const Text(
+            '_',
+            style: TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 32.0,
+              color: AppColors.terminalGreen,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),
