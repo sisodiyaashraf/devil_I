@@ -21,7 +21,7 @@ class _MuteToggleButtonState extends State<MuteToggleButton> {
     return IconButton(
       icon: Icon(
         isMuted ? Icons.volume_off : Icons.volume_up,
-        color: isMuted ? AppColors.fadedText : AppColors.whisperWhite,
+        color: isMuted ? AppColors.staticGray : AppColors.terminalGreen,
       ),
       tooltip: isMuted ? 'Unmute Audio' : 'Mute Audio',
       onPressed: () async {

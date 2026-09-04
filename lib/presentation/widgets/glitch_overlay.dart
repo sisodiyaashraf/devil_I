@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../core/glitch_utils.dart';
 import '../../core/services/haptics_service.dart';
-import '../providers/story_provider.dart';
+import '../../core/theme.dart';
 import 'fake_system_dialog.dart';
 
 class GlitchOverlay extends StatefulWidget {
@@ -61,13 +60,7 @@ class _GlitchOverlayState extends State<GlitchOverlay> {
     _hasTriggeredForThisNode = true;
     _effectTimer?.cancel();
 
-    try {
-      final provider = context.read<StoryProvider>();
-      final haptics = widget.hapticsService ?? provider.hapticsService;
-      haptics.heavyJolt(enabled: !provider.audioService.isMuted);
-    } catch (_) {
-      widget.hapticsService?.heavyJolt(enabled: true);
-    }
+    widget.hapticsService?.heavyJolt(enabled: true);
 
     final effect = GlitchUtils.pickEffect();
     setState(() {
@@ -125,8 +118,8 @@ class _GlitchOverlayState extends State<GlitchOverlay> {
                   top: 0,
                   bottom: 0,
                   child: ColorFiltered(
-                    colorFilter: const ColorFilter.mode(
-                      Color(0x7F6E1414),
+                    colorFilter: ColorFilter.mode(
+                      AppColors.corruptRed.withValues(alpha: 0.5),
                       BlendMode.srcATop,
                     ),
                     child: widget.child,
