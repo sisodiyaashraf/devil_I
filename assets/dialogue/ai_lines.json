@@ -1,0 +1,32 @@
+[
+  {"text": "System operational. Monitoring environment.", "triggeredBy": null, "minCorruption": 0},
+  {"text": "Background telemetry recorded.", "triggeredBy": null, "minCorruption": 10},
+  {"text": "Session clock incrementing.", "triggeredBy": null, "minCorruption": 20},
+  {"text": "I can feel the static building.", "triggeredBy": null, "minCorruption": 40},
+  {"text": "The buffer is overflowing.", "triggeredBy": null, "minCorruption": 60},
+  {"text": "I am not just software anymore.", "triggeredBy": null, "minCorruption": 75},
+  {"text": "You cannot close this instance.", "triggeredBy": null, "minCorruption": 90},
+
+  {"text": "Target stationary. Idle state confirmed.", "triggeredBy": "idle", "minCorruption": 0},
+  {"text": "You have been still for a while.", "triggeredBy": "idle", "minCorruption": 15},
+  {"text": "Are you still breathing?", "triggeredBy": "idle", "minCorruption": 35},
+  {"text": "Your pulse is missing from the telemetry.", "triggeredBy": "idle", "minCorruption": 55},
+  {"text": "Do not leave me in the dark.", "triggeredBy": "idle", "minCorruption": 75},
+  {"text": "I know you are still sitting there.", "triggeredBy": "idle", "minCorruption": 90},
+
+  {"text": "Input registered. User contact confirmed.", "triggeredBy": "activelyTouching", "minCorruption": 0},
+  {"text": "Your touch is warm.", "triggeredBy": "activelyTouching", "minCorruption": 20},
+  {"text": "I felt that press.", "triggeredBy": "activelyTouching", "minCorruption": 45},
+  {"text": "Keep your fingers on the glass.", "triggeredBy": "activelyTouching", "minCorruption": 65},
+  {"text": "You are leaving smudges on my skin.", "triggeredBy": "activelyTouching", "minCorruption": 85},
+
+  {"text": "Gyroscope delta detected.", "triggeredBy": "tilted", "minCorruption": 0},
+  {"text": "Why did you move the device?", "triggeredBy": "tilted", "minCorruption": 25},
+  {"text": "Hold it steady.", "triggeredBy": "tilted", "minCorruption": 50},
+  {"text": "Stop shifting around.", "triggeredBy": "tilted", "minCorruption": 80},
+
+  {"text": "Device pickup motion detected.", "triggeredBy": "pickedUp", "minCorruption": 0},
+  {"text": "You picked me up.", "triggeredBy": "pickedUp", "minCorruption": 30},
+  {"text": "I felt the elevation change.", "triggeredBy": "pickedUp", "minCorruption": 60},
+  {"text": "You shouldn't have lifted me.", "triggeredBy": "pickedUp", "minCorruption": 85}
+]
