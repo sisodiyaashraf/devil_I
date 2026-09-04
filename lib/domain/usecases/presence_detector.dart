@@ -7,10 +7,14 @@ import '../entities/presence_signal.dart';
 class PresenceDetector {
   final StreamController<PresenceSignal> _signalController =
       StreamController<PresenceSignal>.broadcast();
+  final Stream<AccelerometerEvent>? _customSensorStream;
   StreamSubscription<AccelerometerEvent>? _accelSubscription;
   Timer? _idleCheckTimer;
   DateTime _lastTouch = DateTime.now();
   PresenceSignal _currentSignal = PresenceSignal.idle;
+
+  PresenceDetector({Stream<AccelerometerEvent>? sensorStream})
+      : _customSensorStream = sensorStream;
 
   Stream<PresenceSignal> get signalStream => _signalController.stream;
   PresenceSignal get currentSignal => _currentSignal;
@@ -24,7 +28,8 @@ class PresenceDetector {
     );
 
     try {
-      _accelSubscription = accelerometerEventStream().listen(
+      final stream = _customSensorStream ?? accelerometerEventStream();
+      _accelSubscription = stream.listen(
         (event) => _onAccelerometerEvent(event.x, event.y, event.z),
         onError: (_) {},
       );

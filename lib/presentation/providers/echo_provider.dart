@@ -10,7 +10,7 @@ class EchoProvider extends ChangeNotifier {
 
   PresenceSignal _currentSignal = PresenceSignal.idle;
   int _corruptionLevel = 0;
-  bool _isMuted = false;
+  final bool _isMuted = false;
   StreamSubscription<PresenceSignal>? _signalSubscription;
 
   EchoProvider({
