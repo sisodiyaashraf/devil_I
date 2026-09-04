@@ -1,40 +1,72 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'core/services/audio_service.dart';
-import 'core/services/haptics_service.dart';
 import 'core/theme.dart';
-import 'data/repositories/ending_repository.dart';
-import 'data/repositories/save_repository.dart';
-import 'data/repositories/story_repository.dart';
-import 'presentation/providers/story_provider.dart';
-import 'presentation/screens/home_screen.dart';
 
 void main() {
-  runApp(const WhispersApp());
+  runApp(const EchoApp());
 }
 
-class WhispersApp extends StatelessWidget {
-  const WhispersApp({super.key});
+class EchoApp extends StatelessWidget {
+  const EchoApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (_) => StoryProvider(
-            StoryRepository(),
-            AudioService(),
-            SaveRepository(),
-            EndingRepository(),
-            HapticsService(),
-          ),
-        ),
+      providers: const [
+        // EchoProvider will be added here in Step 3
       ],
       child: MaterialApp(
-        title: 'Whispers',
+        title: 'ECHO',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.dark,
-        home: const HomeScreen(),
+        home: const PlaceholderScreen(),
+      ),
+    );
+  }
+}
+
+class PlaceholderScreen extends StatefulWidget {
+  const PlaceholderScreen({super.key});
+
+  @override
+  State<PlaceholderScreen> createState() => _PlaceholderScreenState();
+}
+
+class _PlaceholderScreenState extends State<PlaceholderScreen> {
+  bool _visible = true;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(milliseconds: 500), (_) {
+      if (mounted) {
+        setState(() => _visible = !_visible);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Center(
+        child: Text(
+          _visible ? '_' : ' ',
+          style: const TextStyle(
+            fontFamily: 'monospace',
+            fontSize: 32.0,
+            color: AppColors.terminalGreen,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }
