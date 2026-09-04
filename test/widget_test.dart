@@ -1,14 +1,25 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whispers/main.dart';
 
 void main() {
-  testWidgets('App renders EchoApp placeholder screen with blinking cursor', (WidgetTester tester) async {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  const sensorChannel = MethodChannel('dev.fluttercommunity.plus/sensors/method');
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(sensorChannel, (MethodCall methodCall) async {
+      return null;
+    });
+  });
+
+  testWidgets('App renders EchoApp MainScreen with corruption meter', (WidgetTester tester) async {
     await tester.pumpWidget(const EchoApp());
     await tester.pump();
 
-    expect(find.text('_'), findsOneWidget);
-
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(find.text(' '), findsOneWidget);
+    expect(find.textContaining('SYSTEM CORRUPTION'), findsOneWidget);
   });
 }

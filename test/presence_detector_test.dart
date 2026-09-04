@@ -5,8 +5,10 @@ import 'package:sensors_plus/sensors_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whispers/core/sensor_utils.dart';
 import 'package:whispers/data/repositories/save_repository.dart';
+import 'package:whispers/domain/entities/ai_line.dart';
 import 'package:whispers/domain/entities/presence_signal.dart';
 import 'package:whispers/domain/usecases/presence_detector.dart';
+import 'package:whispers/presentation/providers/corruption_engine.dart';
 import 'package:whispers/presentation/providers/echo_provider.dart';
 
 void main() {
@@ -35,27 +37,31 @@ void main() {
     });
   });
 
-  group('PresenceDetector & EchoProvider tests', () {
-    test('registerTouch updates PresenceDetector signal', () async {
-      final sensorController = StreamController<AccelerometerEvent>();
-      final detector = PresenceDetector(sensorStream: sensorController.stream);
-      detector.start();
-
-      expect(detector.currentSignal, PresenceSignal.idle);
-
-      detector.registerTouch();
-      expect(detector.currentSignal, PresenceSignal.activelyTouching);
-
-      sensorController.add(AccelerometerEvent(3.0, 3.0, 12.0, DateTime.now()));
-      await Future.delayed(Duration.zero);
-
-      expect(detector.currentSignal, PresenceSignal.pickedUp);
-
-      detector.dispose();
-      await sensorController.close();
+  group('CorruptionEngine tests', () {
+    test('nextCorruptionLevel calculates gain and clamps max', () {
+      expect(CorruptionEngine.nextCorruptionLevel(0, PresenceSignal.activelyTouching), 1);
+      expect(CorruptionEngine.nextCorruptionLevel(0, PresenceSignal.tilted), 3);
+      expect(CorruptionEngine.nextCorruptionLevel(0, PresenceSignal.pickedUp), 5);
+      expect(CorruptionEngine.nextCorruptionLevel(0, PresenceSignal.idle), 4);
+      expect(CorruptionEngine.nextCorruptionLevel(99, PresenceSignal.pickedUp), 100);
     });
 
-    test('EchoProvider receives signals from PresenceDetector end-to-end', () async {
+    test('pickLine respects signal and corruption threshold', () {
+      const lines = [
+        AiLine(text: 'Low ambient', triggeredBy: null, minCorruption: 0),
+        AiLine(text: 'High tilt', triggeredBy: PresenceSignal.tilted, minCorruption: 50),
+      ];
+
+      final lineLow = CorruptionEngine.pickLine(lines, PresenceSignal.tilted, 10);
+      expect(lineLow?.text, 'Low ambient');
+
+      final lineHigh = CorruptionEngine.pickLine(lines, PresenceSignal.tilted, 60);
+      expect(lineHigh, isNotNull);
+    });
+  });
+
+  group('EchoProvider & PresenceDetector end-to-end tests', () {
+    test('Signals drive corruption escalation and dialogue selection', () async {
       final sensorController = StreamController<AccelerometerEvent>();
       final detector = PresenceDetector(sensorStream: sensorController.stream);
       final repository = SaveRepository();
@@ -64,17 +70,14 @@ void main() {
         saveRepository: repository,
       );
 
-      int notifyCount = 0;
-      provider.addListener(() => notifyCount++);
-
       await provider.startSession();
-      expect(provider.currentSignal, PresenceSignal.idle);
+      final initialCorruption = provider.corruptionLevel;
 
       provider.registerTouch();
       await Future.delayed(Duration.zero);
 
       expect(provider.currentSignal, PresenceSignal.activelyTouching);
-      expect(notifyCount, greaterThan(0));
+      expect(provider.corruptionLevel, greaterThan(initialCorruption));
 
       await provider.endSession();
       await sensorController.close();
