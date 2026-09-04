@@ -1,5 +1,5 @@
 name: whispers
-description: "An interactive horror story app."
+description: "ECHO"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -24,5 +24,4 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/story/
     - assets/audio/

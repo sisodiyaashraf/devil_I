@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color background = Color(0xFF0A0A0B);
-  static const Color surface = Color(0xFF141416);
-  static const Color bloodRed = Color(0xFF6E1414);
-  static const Color fadedText = Color(0xFFB8B4AE);
-  static const Color whisperWhite = Color(0xFFE8E4DE);
+  static const Color background = Color(0xFF000000);
+  static const Color terminalGreen = Color(0xFF00FF9C);
+  static const Color corruptRed = Color(0xFFFF1B3C);
+  static const Color surface = Color(0xFF0D0D0F);
+  static const Color staticGray = Color(0xFF3A3A3D);
 }
 
 class AppTheme {
@@ -14,29 +14,32 @@ class AppTheme {
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.background,
       colorScheme: const ColorScheme.dark(
-        primary: AppColors.bloodRed,
+        primary: AppColors.terminalGreen,
+        secondary: AppColors.corruptRed,
         surface: AppColors.surface,
       ),
       textTheme: const TextTheme(
         bodyLarge: TextStyle(
-          fontFamily: 'Georgia',
-          fontSize: 18.0,
-          height: 1.6,
-          color: AppColors.fadedText,
+          fontFamily: 'monospace',
+          fontSize: 16.0,
+          height: 1.4,
+          color: AppColors.terminalGreen,
         ),
         titleLarge: TextStyle(
-          fontSize: 24.0,
-          fontWeight: FontWeight.w600,
-          color: AppColors.whisperWhite,
+          fontFamily: 'monospace',
+          fontSize: 22.0,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          letterSpacing: 2.0,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.surface,
-          foregroundColor: AppColors.whisperWhite,
-          side: const BorderSide(color: AppColors.bloodRed, width: 0.6),
+          foregroundColor: AppColors.terminalGreen,
+          side: const BorderSide(color: AppColors.terminalGreen, width: 1.0),
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(2.0)),
+            borderRadius: BorderRadius.zero,
           ),
         ),
       ),
