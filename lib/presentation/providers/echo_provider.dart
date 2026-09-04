@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../core/constants.dart';
+import '../../core/services/audio_service.dart';
+import '../../core/services/haptics_service.dart';
 import '../../data/repositories/dialogue_repository.dart';
 import '../../data/repositories/save_repository.dart';
 import '../../domain/entities/ai_line.dart';
@@ -12,10 +14,11 @@ class EchoProvider extends ChangeNotifier {
   final PresenceDetector _presenceDetector;
   final SaveRepository _saveRepository;
   final DialogueRepository _dialogueRepository;
+  final AudioService _audioService;
+  final HapticsService _hapticsService;
 
   PresenceSignal _currentSignal = PresenceSignal.idle;
   int _corruptionLevel = 0;
-  final bool _isMuted = false;
   List<AiLine> _allLines = [];
   AiLine? _currentLine;
 
@@ -26,19 +29,29 @@ class EchoProvider extends ChangeNotifier {
     PresenceDetector? presenceDetector,
     SaveRepository? saveRepository,
     DialogueRepository? dialogueRepository,
+    AudioService? audioService,
+    HapticsService? hapticsService,
   })  : _presenceDetector = presenceDetector ?? PresenceDetector(),
         _saveRepository = saveRepository ?? SaveRepository(),
-        _dialogueRepository = dialogueRepository ?? DialogueRepository();
+        _dialogueRepository = dialogueRepository ?? DialogueRepository(),
+        _audioService = audioService ?? AudioService(),
+        _hapticsService = hapticsService ?? HapticsService();
 
   PresenceSignal get currentSignal => _currentSignal;
+  PresenceSignal? get lastSignalForGlitch => _currentSignal;
   int get corruptionLevel => _corruptionLevel;
-  bool get isMuted => _isMuted;
+  bool get isMuted => _audioService.isMuted;
   AiLine? get currentLine => _currentLine;
   PresenceDetector get presenceDetector => _presenceDetector;
+  AudioService get audioService => _audioService;
+  HapticsService get hapticsService => _hapticsService;
 
   Future<void> startSession() async {
+    await _audioService.loadMuteState();
+    await _audioService.playAmbient();
     _corruptionLevel = await _saveRepository.loadLastSessionCorruption();
     _allLines = await _dialogueRepository.loadLines();
+    await _audioService.updateAmbientIntensity(_corruptionLevel);
     notifyListeners();
 
     _presenceDetector.start();
@@ -59,7 +72,30 @@ class EchoProvider extends ChangeNotifier {
     if (newLine != null) {
       _currentLine = newLine;
     }
+
+    _triggerAudioAndHaptics(signal);
+    _audioService.updateAmbientIntensity(_corruptionLevel);
     notifyListeners();
+  }
+
+  void _triggerAudioAndHaptics(PresenceSignal signal) {
+    final hapticsEnabled = !_audioService.isMuted;
+    switch (signal) {
+      case PresenceSignal.pickedUp:
+        _audioService.playSting('systemBeep');
+        _hapticsService.heavyJolt(enabled: hapticsEnabled);
+        break;
+      case PresenceSignal.tilted:
+        _audioService.playSting('static');
+        _hapticsService.lightPulse(enabled: hapticsEnabled);
+        break;
+      case PresenceSignal.activelyTouching:
+        _hapticsService.lightPulse(enabled: hapticsEnabled);
+        break;
+      case PresenceSignal.idle:
+        _audioService.playSting('lowHum');
+        break;
+    }
   }
 
   void _onCorruptionTick() {
@@ -76,6 +112,7 @@ class EchoProvider extends ChangeNotifier {
       if (newLine != null) {
         _currentLine = newLine;
       }
+      _audioService.updateAmbientIntensity(_corruptionLevel);
       notifyListeners();
     }
   }
@@ -89,6 +126,7 @@ class EchoProvider extends ChangeNotifier {
     await _signalSubscription?.cancel();
     _presenceDetector.dispose();
     await _saveRepository.saveSessionCorruption(_corruptionLevel);
+    await _audioService.stopAmbient();
   }
 
   @override

@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import '../../core/glitch_utils.dart';
 import '../../core/services/haptics_service.dart';
 import '../../core/theme.dart';
+import '../../domain/entities/presence_signal.dart';
 import 'fake_system_dialog.dart';
 
 class GlitchOverlay extends StatefulWidget {
   final Widget child;
   final int corruptionLevel;
+  final PresenceSignal? signal;
   final bool forceTrigger;
   final HapticsService? hapticsService;
 
@@ -16,7 +18,8 @@ class GlitchOverlay extends StatefulWidget {
     super.key,
     required this.child,
     required this.corruptionLevel,
-    required this.forceTrigger,
+    this.signal,
+    this.forceTrigger = false,
     this.hapticsService,
   });
 
@@ -28,25 +31,26 @@ class _GlitchOverlayState extends State<GlitchOverlay> {
   GlitchEffect? _activeEffect;
   Timer? _effectTimer;
   double _rgbOffset = 0.0;
-  bool _hasTriggeredForThisNode = false;
 
   @override
   void initState() {
     super.initState();
-    if (widget.forceTrigger) {
-      _triggerGlitch();
+    if (widget.forceTrigger || GlitchUtils.shouldHardTrigger(widget.signal)) {
+      _triggerGlitch(isHard: true);
     }
   }
 
   @override
   void didUpdateWidget(covariant GlitchOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.corruptionLevel != oldWidget.corruptionLevel &&
-        !widget.forceTrigger &&
-        !_hasTriggeredForThisNode) {
-      if (GlitchUtils.shouldTrigger(widget.corruptionLevel)) {
-        _triggerGlitch();
-      }
+    final signalChanged = widget.signal != oldWidget.signal;
+    final corruptionChanged = widget.corruptionLevel != oldWidget.corruptionLevel;
+
+    if (signalChanged && GlitchUtils.shouldHardTrigger(widget.signal)) {
+      _triggerGlitch(isHard: true);
+    } else if ((signalChanged || corruptionChanged) &&
+        GlitchUtils.shouldTrigger(widget.corruptionLevel)) {
+      _triggerGlitch(isHard: false);
     }
   }
 
@@ -56,17 +60,15 @@ class _GlitchOverlayState extends State<GlitchOverlay> {
     super.dispose();
   }
 
-  void _triggerGlitch() {
-    _hasTriggeredForThisNode = true;
+  void _triggerGlitch({bool isHard = false}) {
     _effectTimer?.cancel();
-
     widget.hapticsService?.heavyJolt(enabled: true);
 
-    final effect = GlitchUtils.pickEffect();
+    final effect = GlitchUtils.pickEffect(isHardTrigger: isHard);
     setState(() {
       _activeEffect = effect;
       if (effect == GlitchEffect.rgbSplit) {
-        _rgbOffset = (math.Random().nextDouble() * 16) - 8;
+        _rgbOffset = (math.Random().nextDouble() * 20) - 10;
       }
     });
 
@@ -119,7 +121,7 @@ class _GlitchOverlayState extends State<GlitchOverlay> {
                   bottom: 0,
                   child: ColorFiltered(
                     colorFilter: ColorFilter.mode(
-                      AppColors.corruptRed.withValues(alpha: 0.5),
+                      AppColors.corruptRed.withValues(alpha: 0.6),
                       BlendMode.srcATop,
                     ),
                     child: widget.child,

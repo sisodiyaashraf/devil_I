@@ -8,16 +8,16 @@ class AudioService {
 
   bool _isMuted = false;
   bool _isAmbientPlaying = false;
+  int _currentIntensityZone = -1;
 
   bool get isMuted => _isMuted;
 
   static const Map<String, String> _cues = {
-    'creak': 'audio/creak.mp3',
-    'heartbeat': 'audio/heartbeat.mp3',
+    'static': 'audio/creak.mp3',
+    'lowHum': 'audio/ambient.mp3',
+    'systemBeep': 'audio/heartbeat.mp3',
+    'distortedVoice': 'audio/creak.mp3',
     'silence': 'audio/silence.mp3',
-    'whisper': 'audio/creak.mp3',
-    'jumpscare': 'audio/heartbeat.mp3',
-    'alarm': 'audio/creak.mp3',
   };
 
   Future<void> loadMuteState() async {
@@ -39,8 +39,35 @@ class AudioService {
 
   Future<void> _applyVolume() async {
     try {
-      await _ambientPlayer.setVolume(_isMuted ? 0.0 : 0.3);
+      final double ambientVol = _isMuted
+          ? 0.0
+          : (0.2 + (_currentIntensityZone.clamp(0, 2) * 0.25)).clamp(0.2, 0.8);
+      await _ambientPlayer.setVolume(ambientVol);
       await _stingPlayer.setVolume(_isMuted ? 0.0 : 0.8);
+    } catch (_) {}
+  }
+
+  Future<void> updateAmbientIntensity(int corruptionLevel) async {
+    int zone;
+    if (corruptionLevel < 30) {
+      zone = 0;
+    } else if (corruptionLevel < 70) {
+      zone = 1;
+    } else {
+      zone = 2;
+    }
+
+    if (zone == _currentIntensityZone) return;
+    _currentIntensityZone = zone;
+
+    try {
+      final double volume = _isMuted
+          ? 0.0
+          : (0.2 + (zone * 0.25)).clamp(0.2, 0.8);
+      await _ambientPlayer.setVolume(volume);
+      if (!_isAmbientPlaying) {
+        await playAmbient();
+      }
     } catch (_) {}
   }
 
@@ -62,7 +89,7 @@ class AudioService {
   }
 
   Future<void> playSting(String? cueKey) async {
-    if (cueKey == null) return;
+    if (cueKey == null || _isMuted) return;
     final path = _cues[cueKey] ?? 'audio/creak.mp3';
 
     try {
@@ -71,13 +98,4 @@ class AudioService {
       await _stingPlayer.play(AssetSource(path));
     } catch (_) {}
   }
-
-  Future<void> playJumpscare() async {
-    await playSting('jumpscare');
-  }
-
-  Future<void> playAlarm() async {
-    await playSting('alarm');
-  }
 }
-

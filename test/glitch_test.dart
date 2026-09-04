@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:whispers/core/services/haptics_service.dart';
+import 'package:whispers/domain/entities/presence_signal.dart';
 import 'package:whispers/presentation/widgets/glitch_overlay.dart';
 
 class MockHapticsService extends HapticsService {
@@ -9,7 +10,7 @@ class MockHapticsService extends HapticsService {
 }
 
 void main() {
-  testWidgets('GlitchOverlay triggers visual glitches', (
+  testWidgets('GlitchOverlay triggers visual glitches on forceTrigger and pickedUp signal', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
@@ -17,7 +18,7 @@ void main() {
         home: Scaffold(
           body: GlitchOverlay(
             corruptionLevel: 0,
-            forceTrigger: true,
+            signal: PresenceSignal.pickedUp,
             hapticsService: MockHapticsService(),
             child: const Text('Test Child Text'),
           ),

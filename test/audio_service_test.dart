@@ -11,6 +11,7 @@ class MockAudioService implements AudioService {
   String? lastStingCue;
   int playAmbientCount = 0;
   int loadMuteStateCount = 0;
+  int updateAmbientCount = 0;
 
   @override
   bool get isMuted => _isMuted;
@@ -26,6 +27,11 @@ class MockAudioService implements AudioService {
   }
 
   @override
+  Future<void> updateAmbientIntensity(int corruptionLevel) async {
+    updateAmbientCount++;
+  }
+
+  @override
   Future<void> playAmbient() async {
     playAmbientCount++;
   }
@@ -37,12 +43,6 @@ class MockAudioService implements AudioService {
   Future<void> playSting(String? cueKey) async {
     lastStingCue = cueKey;
   }
-
-  @override
-  Future<void> playJumpscare() async {}
-
-  @override
-  Future<void> playAlarm() async {}
 }
 
 void main() {
