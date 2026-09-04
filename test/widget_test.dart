@@ -1,47 +1,20 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whispers/main.dart';
 
 void main() {
-  testWidgets('App renders Whispers home screen and navigates to story', (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({});
+  testWidgets('App renders EchoApp placeholder screen with blinking cursor', (WidgetTester tester) async {
+    await tester.pumpWidget(const EchoApp());
 
-    const globalChannel = MethodChannel('xyz.luan/audioplayers.global');
-    const playerChannel = MethodChannel('xyz.luan/audioplayers');
+    expect(find.text('_'), findsOneWidget);
 
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(globalChannel, (MethodCall methodCall) async {
-      return null;
-    });
-
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(playerChannel, (MethodCall methodCall) async {
-      return null;
-    });
-
-    await tester.pumpWidget(const WhispersApp());
-
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
-    while (tester.any(find.byType(CircularProgressIndicator))) {
-      await tester.pump(const Duration(milliseconds: 50));
-    }
-
-    final chapterTile = find.text('CONTAINMENT BREACH THETA');
-    expect(chapterTile, findsOneWidget);
-    await tester.tap(chapterTile);
-
-    await tester.pump();
-    while (tester.any(find.byType(CircularProgressIndicator))) {
-      await tester.pump(const Duration(milliseconds: 50));
-    }
-
-    await tester.pump(const Duration(seconds: 3));
     await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump();
 
-    expect(find.textContaining('DEVIL_I'), findsWidgets);
+    expect(find.text('_'), findsNothing);
+
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump();
+
+    expect(find.text('_'), findsOneWidget);
   });
 }
-
