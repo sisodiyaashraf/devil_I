@@ -22,7 +22,7 @@ class CorruptedText extends StatefulWidget {
 
 class _CorruptedTextState extends State<CorruptedText> {
   static const List<String> _glitchChars = [
-    '░', '▒', '▓', '█', '§', 'µ', 'Ø', '▲', '?', '#', '&', '$', '⍉'
+    '░', '▒', '▓', '█', '§', 'µ', 'Ø', '▲', '?', '#', '&', r'$', 'X'
   ];
 
   late String _displayedText;
