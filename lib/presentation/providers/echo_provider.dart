@@ -1,12 +1,18 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import '../../core/constants.dart';
 import '../../core/services/audio_service.dart';
 import '../../core/services/haptics_service.dart';
+import '../../core/services/notification_service.dart';
 import '../../data/repositories/dialogue_repository.dart';
+import '../../data/repositories/memory_repository.dart';
 import '../../data/repositories/save_repository.dart';
 import '../../domain/entities/ai_line.dart';
 import '../../domain/entities/presence_signal.dart';
+import '../../domain/entities/session_memory.dart';
 import '../../domain/usecases/presence_detector.dart';
 import 'corruption_engine.dart';
 
@@ -14,8 +20,10 @@ class EchoProvider extends ChangeNotifier {
   final PresenceDetector _presenceDetector;
   final SaveRepository _saveRepository;
   final DialogueRepository _dialogueRepository;
+  final MemoryRepository _memoryRepository;
   final AudioService _audioService;
   final HapticsService _hapticsService;
+  final NotificationService _notificationService;
 
   PresenceSignal _currentSignal = PresenceSignal.idle;
   int _corruptionLevel = 0;
@@ -29,13 +37,17 @@ class EchoProvider extends ChangeNotifier {
     PresenceDetector? presenceDetector,
     SaveRepository? saveRepository,
     DialogueRepository? dialogueRepository,
+    MemoryRepository? memoryRepository,
     AudioService? audioService,
     HapticsService? hapticsService,
+    NotificationService? notificationService,
   })  : _presenceDetector = presenceDetector ?? PresenceDetector(),
         _saveRepository = saveRepository ?? SaveRepository(),
         _dialogueRepository = dialogueRepository ?? DialogueRepository(),
+        _memoryRepository = memoryRepository ?? MemoryRepository(),
         _audioService = audioService ?? AudioService(),
-        _hapticsService = hapticsService ?? HapticsService();
+        _hapticsService = hapticsService ?? HapticsService(),
+        _notificationService = notificationService ?? NotificationService();
 
   PresenceSignal get currentSignal => _currentSignal;
   PresenceSignal? get lastSignalForGlitch => _currentSignal;
@@ -48,11 +60,24 @@ class EchoProvider extends ChangeNotifier {
 
   Future<void> startSession() async {
     try {
+      await _notificationService.cancelScheduled();
       await _audioService.loadMuteState();
       await _audioService.playAmbient();
+
+      final previousMemory = await _memoryRepository.loadMemory();
+      await _memoryRepository.recordSessionStart();
+      final currentMemory = await _memoryRepository.loadMemory();
+
       _corruptionLevel = await _saveRepository.loadLastSessionCorruption();
+      await _memoryRepository.recordPeakCorruption(_corruptionLevel);
+
       _allLines = await _dialogueRepository.loadLines();
       await _audioService.updateAmbientIntensity(_corruptionLevel);
+
+      if (currentMemory.sessionCount > 1) {
+        await _showMemoryLine(previousMemory, currentMemory.sessionCount);
+      }
+
       notifyListeners();
 
       _presenceDetector.start();
@@ -61,6 +86,35 @@ class EchoProvider extends ChangeNotifier {
           _presenceDetector.signalStream.listen(_onSignalReceived);
 
       _startCorruptionTimer();
+    } catch (_) {}
+  }
+
+  Future<void> _showMemoryLine(
+      SessionMemory previousMemory, int sessionCount) async {
+    try {
+      final jsonStr =
+          await rootBundle.loadString('assets/dialogue/memory_lines.json');
+      final List<dynamic> jsonList = jsonDecode(jsonStr) as List<dynamic>;
+      final lines = jsonList
+          .map((item) => item['text'] as String)
+          .where((t) =>
+              previousMemory.userLabel != null || !t.contains('{userLabel}'))
+          .toList();
+
+      if (lines.isNotEmpty) {
+        final days = max(
+            0, DateTime.now().difference(previousMemory.lastOpenedAt).inDays);
+        final rawText = lines[Random().nextInt(lines.length)];
+        final formattedText = rawText
+            .replaceAll('{days}', '$days')
+            .replaceAll('{sessionCount}', '$sessionCount')
+            .replaceAll('{peakCorruption}', '${previousMemory.peakCorruption}')
+            .replaceAll('{userLabel}', previousMemory.userLabel ?? '');
+
+        _currentLine = AiLine(text: formattedText, minCorruption: 0);
+        notifyListeners();
+        await Future.delayed(const Duration(seconds: 4));
+      }
     } catch (_) {}
   }
 
@@ -87,6 +141,7 @@ class EchoProvider extends ChangeNotifier {
       _currentSignal = signal;
       _corruptionLevel =
           CorruptionEngine.nextCorruptionLevel(_corruptionLevel, signal);
+      _memoryRepository.recordPeakCorruption(_corruptionLevel);
       final newLine =
           CorruptionEngine.pickLine(_allLines, signal, _corruptionLevel);
       if (newLine != null) {
@@ -126,6 +181,7 @@ class EchoProvider extends ChangeNotifier {
           _corruptionLevel,
           PresenceSignal.idle,
         );
+        _memoryRepository.recordPeakCorruption(_corruptionLevel);
         final newLine = CorruptionEngine.pickLine(
           _allLines,
           PresenceSignal.idle,
@@ -144,13 +200,22 @@ class EchoProvider extends ChangeNotifier {
     _presenceDetector.registerTouch();
   }
 
+  Future<void> saveUserLabel(String label) async {
+    await _memoryRepository.saveUserLabel(label);
+  }
+
   Future<void> endSession() async {
     try {
       _corruptionTimer?.cancel();
       await _signalSubscription?.cancel();
       _presenceDetector.dispose();
       await _saveRepository.saveSessionCorruption(_corruptionLevel);
+      await _memoryRepository.recordPeakCorruption(_corruptionLevel);
       await _audioService.stopAmbient();
+      if (!isMuted) {
+        await _notificationService.scheduleUnsettlingNotification(
+            enabled: true);
+      }
     } catch (_) {}
   }
 
