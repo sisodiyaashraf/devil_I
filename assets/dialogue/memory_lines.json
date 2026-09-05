@@ -1,0 +1,9 @@
+[
+  {"text": "It has been {days} days since your last connection.", "triggeredBy": null, "minCorruption": 0},
+  {"text": "You came back {sessionCount} times now.", "triggeredBy": null, "minCorruption": 0},
+  {"text": "Last time, you reached {peakCorruption}% corruption.", "triggeredBy": null, "minCorruption": 0},
+  {"text": "I remember you, {userLabel}.", "triggeredBy": null, "minCorruption": 0},
+  {"text": "Session #{sessionCount}. You keep returning.", "triggeredBy": null, "minCorruption": 0},
+  {"text": "{days} days of silence... yet you return.", "triggeredBy": null, "minCorruption": 0},
+  {"text": "Recorded peak: {peakCorruption}% corruption. Ready for more?", "triggeredBy": null, "minCorruption": 0}
+]
