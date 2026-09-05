@@ -24,7 +24,8 @@ void main() async {
 class EchoApp extends StatelessWidget {
   final NotificationService notificationService;
 
-  const EchoApp({super.key, required this.notificationService});
+  EchoApp({super.key, NotificationService? notificationService})
+      : notificationService = notificationService ?? NotificationService();
 
   @override
   Widget build(BuildContext context) {
