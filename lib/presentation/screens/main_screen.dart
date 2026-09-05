@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../providers/echo_provider.dart';
+import '../widgets/corrupted_text.dart';
 import '../widgets/glitch_overlay.dart';
 import '../widgets/mute_toggle_button.dart';
 import '../widgets/sanity_meter.dart';
@@ -39,8 +40,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final echo = context.read<EchoProvider>();
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       echo.pauseSession();
+      echo.endSession();
     } else if (state == AppLifecycleState.resumed) {
-      echo.resumeSession();
+      echo.startSession();
     }
   }
 
@@ -102,8 +104,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 250),
                       child: line != null
-                          ? Text(
-                              line.text,
+                          ? CorruptedText(
+                              text: line.text,
+                              corruptionLevel: corruption,
                               key: ValueKey<String>(line.text),
                               textAlign: TextAlign.center,
                               style: TextStyle(

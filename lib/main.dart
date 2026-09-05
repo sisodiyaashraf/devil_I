@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'core/services/notification_service.dart';
 import 'core/theme.dart';
 import 'data/repositories/dialogue_repository.dart';
+import 'data/repositories/memory_repository.dart';
 import 'data/repositories/save_repository.dart';
 import 'domain/usecases/presence_detector.dart';
 import 'presentation/providers/echo_provider.dart';
@@ -14,11 +16,15 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  runApp(const EchoApp());
+  final notificationService = NotificationService();
+  await notificationService.init();
+  runApp(EchoApp(notificationService: notificationService));
 }
 
 class EchoApp extends StatelessWidget {
-  const EchoApp({super.key});
+  final NotificationService notificationService;
+
+  const EchoApp({super.key, required this.notificationService});
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +35,8 @@ class EchoApp extends StatelessWidget {
             presenceDetector: PresenceDetector(),
             saveRepository: SaveRepository(),
             dialogueRepository: DialogueRepository(),
+            memoryRepository: MemoryRepository(),
+            notificationService: notificationService,
           )..startSession(),
         ),
       ],

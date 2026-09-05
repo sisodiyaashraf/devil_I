@@ -29,7 +29,6 @@ class EchoProvider extends ChangeNotifier {
   int _corruptionLevel = 0;
   List<AiLine> _allLines = [];
   AiLine? _currentLine;
-
   StreamSubscription<PresenceSignal>? _signalSubscription;
   Timer? _corruptionTimer;
 
@@ -64,9 +63,9 @@ class EchoProvider extends ChangeNotifier {
       await _audioService.loadMuteState();
       await _audioService.playAmbient();
 
-      final previousMemory = await _memoryRepository.loadMemory();
+      final prevMemory = await _memoryRepository.loadMemory();
       await _memoryRepository.recordSessionStart();
-      final currentMemory = await _memoryRepository.loadMemory();
+      final currMemory = await _memoryRepository.loadMemory();
 
       _corruptionLevel = await _saveRepository.loadLastSessionCorruption();
       await _memoryRepository.recordPeakCorruption(_corruptionLevel);
@@ -74,44 +73,37 @@ class EchoProvider extends ChangeNotifier {
       _allLines = await _dialogueRepository.loadLines();
       await _audioService.updateAmbientIntensity(_corruptionLevel);
 
-      if (currentMemory.sessionCount > 1) {
-        await _showMemoryLine(previousMemory, currentMemory.sessionCount);
+      if (currMemory.sessionCount > 1) {
+        await _showMemoryLine(prevMemory, currMemory.sessionCount);
       }
-
       notifyListeners();
 
       _presenceDetector.start();
       _signalSubscription?.cancel();
       _signalSubscription =
           _presenceDetector.signalStream.listen(_onSignalReceived);
-
       _startCorruptionTimer();
     } catch (_) {}
   }
 
-  Future<void> _showMemoryLine(
-      SessionMemory previousMemory, int sessionCount) async {
+  Future<void> _showMemoryLine(SessionMemory prev, int count) async {
     try {
-      final jsonStr =
-          await rootBundle.loadString('assets/dialogue/memory_lines.json');
+      final jsonStr = await rootBundle.loadString('assets/dialogue/memory_lines.json');
       final List<dynamic> jsonList = jsonDecode(jsonStr) as List<dynamic>;
       final lines = jsonList
-          .map((item) => item['text'] as String)
-          .where((t) =>
-              previousMemory.userLabel != null || !t.contains('{userLabel}'))
+          .map((i) => i['text'] as String)
+          .where((t) => prev.userLabel != null || !t.contains('{userLabel}'))
           .toList();
 
       if (lines.isNotEmpty) {
-        final days = max(
-            0, DateTime.now().difference(previousMemory.lastOpenedAt).inDays);
-        final rawText = lines[Random().nextInt(lines.length)];
-        final formattedText = rawText
+        final days = max(0, DateTime.now().difference(prev.lastOpenedAt).inDays);
+        final text = lines[Random().nextInt(lines.length)]
             .replaceAll('{days}', '$days')
-            .replaceAll('{sessionCount}', '$sessionCount')
-            .replaceAll('{peakCorruption}', '${previousMemory.peakCorruption}')
-            .replaceAll('{userLabel}', previousMemory.userLabel ?? '');
+            .replaceAll('{sessionCount}', '$count')
+            .replaceAll('{peakCorruption}', '${prev.peakCorruption}')
+            .replaceAll('{userLabel}', prev.userLabel ?? '');
 
-        _currentLine = AiLine(text: formattedText, minCorruption: 0);
+        _currentLine = AiLine(text: text, minCorruption: 0);
         notifyListeners();
         await Future.delayed(const Duration(seconds: 4));
       }
@@ -139,14 +131,10 @@ class EchoProvider extends ChangeNotifier {
   void _onSignalReceived(PresenceSignal signal) {
     try {
       _currentSignal = signal;
-      _corruptionLevel =
-          CorruptionEngine.nextCorruptionLevel(_corruptionLevel, signal);
+      _corruptionLevel = CorruptionEngine.nextCorruptionLevel(_corruptionLevel, signal);
       _memoryRepository.recordPeakCorruption(_corruptionLevel);
-      final newLine =
-          CorruptionEngine.pickLine(_allLines, signal, _corruptionLevel);
-      if (newLine != null) {
-        _currentLine = newLine;
-      }
+      final newLine = CorruptionEngine.pickLine(_allLines, signal, _corruptionLevel);
+      if (newLine != null) _currentLine = newLine;
 
       _triggerAudioAndHaptics(signal);
       _audioService.updateAmbientIntensity(_corruptionLevel);
@@ -155,54 +143,36 @@ class EchoProvider extends ChangeNotifier {
   }
 
   void _triggerAudioAndHaptics(PresenceSignal signal) {
-    final hapticsEnabled = !_audioService.isMuted;
-    switch (signal) {
-      case PresenceSignal.pickedUp:
-        _audioService.playSting('systemBeep');
-        _hapticsService.heavyJolt(enabled: hapticsEnabled);
-        break;
-      case PresenceSignal.tilted:
-        _audioService.playSting('static');
-        _hapticsService.lightPulse(enabled: hapticsEnabled);
-        break;
-      case PresenceSignal.activelyTouching:
-        _hapticsService.lightPulse(enabled: hapticsEnabled);
-        break;
-      case PresenceSignal.idle:
-        _audioService.playSting('lowHum');
-        break;
+    final enabled = !_audioService.isMuted;
+    if (signal == PresenceSignal.pickedUp) {
+      _audioService.playSting('systemBeep');
+      _hapticsService.heavyJolt(enabled: enabled);
+    } else if (signal == PresenceSignal.tilted) {
+      _audioService.playSting('static');
+      _hapticsService.lightPulse(enabled: enabled);
+    } else if (signal == PresenceSignal.activelyTouching) {
+      _hapticsService.lightPulse(enabled: enabled);
+    } else if (signal == PresenceSignal.idle) {
+      _audioService.playSting('lowHum');
     }
   }
 
   void _onCorruptionTick() {
     try {
       if (_currentSignal == PresenceSignal.idle) {
-        _corruptionLevel = CorruptionEngine.nextCorruptionLevel(
-          _corruptionLevel,
-          PresenceSignal.idle,
-        );
+        _corruptionLevel = CorruptionEngine.nextCorruptionLevel(_corruptionLevel, PresenceSignal.idle);
         _memoryRepository.recordPeakCorruption(_corruptionLevel);
-        final newLine = CorruptionEngine.pickLine(
-          _allLines,
-          PresenceSignal.idle,
-          _corruptionLevel,
-        );
-        if (newLine != null) {
-          _currentLine = newLine;
-        }
+        final newLine = CorruptionEngine.pickLine(_allLines, PresenceSignal.idle, _corruptionLevel);
+        if (newLine != null) _currentLine = newLine;
         _audioService.updateAmbientIntensity(_corruptionLevel);
         notifyListeners();
       }
     } catch (_) {}
   }
 
-  void registerTouch() {
-    _presenceDetector.registerTouch();
-  }
+  void registerTouch() => _presenceDetector.registerTouch();
 
-  Future<void> saveUserLabel(String label) async {
-    await _memoryRepository.saveUserLabel(label);
-  }
+  Future<void> saveUserLabel(String label) async => _memoryRepository.saveUserLabel(label);
 
   Future<void> endSession() async {
     try {
@@ -213,8 +183,7 @@ class EchoProvider extends ChangeNotifier {
       await _memoryRepository.recordPeakCorruption(_corruptionLevel);
       await _audioService.stopAmbient();
       if (!isMuted) {
-        await _notificationService.scheduleUnsettlingNotification(
-            enabled: true);
+        await _notificationService.scheduleUnsettlingNotification(enabled: true);
       }
     } catch (_) {}
   }
