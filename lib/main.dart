@@ -22,10 +22,9 @@ void main() async {
 }
 
 class EchoApp extends StatelessWidget {
-  final NotificationService notificationService;
+  final NotificationService? notificationService;
 
-  EchoApp({super.key, NotificationService? notificationService})
-      : notificationService = notificationService ?? NotificationService();
+  const EchoApp({super.key, this.notificationService});
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +36,7 @@ class EchoApp extends StatelessWidget {
             saveRepository: SaveRepository(),
             dialogueRepository: DialogueRepository(),
             memoryRepository: MemoryRepository(),
-            notificationService: notificationService,
+            notificationService: notificationService ?? NotificationService(),
           )..startSession(),
         ),
       ],
