@@ -11,6 +11,7 @@ class PresenceDetector {
   StreamSubscription<AccelerometerEvent>? _accelSubscription;
   Timer? _idleCheckTimer;
   DateTime _lastTouch = DateTime.now();
+  DateTime? _lastMotionSignalTime;
   PresenceSignal _currentSignal = PresenceSignal.idle;
   bool _isPaused = false;
 
@@ -66,9 +67,17 @@ class PresenceDetector {
   }
 
   void _onAccelerometerEvent(double x, double y, double z) {
+    final now = DateTime.now();
+    if (_lastMotionSignalTime != null &&
+        now.difference(_lastMotionSignalTime!) < const Duration(milliseconds: 1200)) {
+      return;
+    }
+
     if (SensorUtils.isPickupMotion(x, y, z)) {
+      _lastMotionSignalTime = now;
       _emitSignal(PresenceSignal.pickedUp);
     } else if (SensorUtils.isSignificantTilt(x, y, z)) {
+      _lastMotionSignalTime = now;
       _emitSignal(PresenceSignal.tilted);
     }
   }

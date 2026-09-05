@@ -63,8 +63,7 @@ class _GlitchOverlayState extends State<GlitchOverlay> {
 
   void _triggerGlitch({bool isHard = false}) {
     final now = DateTime.now();
-    if (isHard &&
-        _lastGlitchTime != null &&
+    if (_lastGlitchTime != null &&
         now.difference(_lastGlitchTime!) < const Duration(milliseconds: 1500)) {
       return;
     }
@@ -73,6 +72,7 @@ class _GlitchOverlayState extends State<GlitchOverlay> {
     widget.hapticsService?.heavyJolt(enabled: true);
 
     final effect = GlitchUtils.pickEffect(isHardTrigger: isHard);
+    if (!mounted) return;
     setState(() {
       _activeEffect = effect;
       if (effect == GlitchEffect.rgbSplit) {
@@ -96,7 +96,9 @@ class _GlitchOverlayState extends State<GlitchOverlay> {
 
   void _dismissDialog() {
     _effectTimer?.cancel();
-    setState(() => _activeEffect = null);
+    if (mounted) {
+      setState(() => _activeEffect = null);
+    }
   }
 
   @override

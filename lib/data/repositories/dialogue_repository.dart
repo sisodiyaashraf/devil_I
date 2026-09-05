@@ -6,7 +6,7 @@ class DialogueRepository {
   final String _assetPath;
 
   DialogueRepository({String assetPath = 'assets/dialogue/ai_lines.json'})
-      : _assetPath = assetPath;
+    : _assetPath = assetPath;
 
   Future<List<AiLine>> loadLines() async {
     try {

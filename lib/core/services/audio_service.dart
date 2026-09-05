@@ -9,6 +9,7 @@ class AudioService {
   bool _isMuted = false;
   bool _isAmbientPlaying = false;
   int _currentIntensityZone = -1;
+  DateTime? _lastStingTime;
 
   bool get isMuted => _isMuted;
 
@@ -90,9 +91,17 @@ class AudioService {
 
   Future<void> playSting(String? cueKey) async {
     if (cueKey == null || _isMuted) return;
+    final now = DateTime.now();
+    if (_lastStingTime != null &&
+        now.difference(_lastStingTime!) < const Duration(milliseconds: 800)) {
+      return;
+    }
+    _lastStingTime = now;
+
     final path = _cues[cueKey] ?? 'audio/creak.mp3';
 
     try {
+      await _stingPlayer.stop();
       await _stingPlayer.setReleaseMode(ReleaseMode.release);
       await _stingPlayer.setVolume(_isMuted ? 0.0 : 0.8);
       await _stingPlayer.play(AssetSource(path));

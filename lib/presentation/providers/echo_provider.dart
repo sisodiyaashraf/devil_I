@@ -47,18 +47,21 @@ class EchoProvider extends ChangeNotifier {
   HapticsService get hapticsService => _hapticsService;
 
   Future<void> startSession() async {
-    await _audioService.loadMuteState();
-    await _audioService.playAmbient();
-    _corruptionLevel = await _saveRepository.loadLastSessionCorruption();
-    _allLines = await _dialogueRepository.loadLines();
-    await _audioService.updateAmbientIntensity(_corruptionLevel);
-    notifyListeners();
+    try {
+      await _audioService.loadMuteState();
+      await _audioService.playAmbient();
+      _corruptionLevel = await _saveRepository.loadLastSessionCorruption();
+      _allLines = await _dialogueRepository.loadLines();
+      await _audioService.updateAmbientIntensity(_corruptionLevel);
+      notifyListeners();
 
-    _presenceDetector.start();
-    _signalSubscription?.cancel();
-    _signalSubscription = _presenceDetector.signalStream.listen(_onSignalReceived);
+      _presenceDetector.start();
+      _signalSubscription?.cancel();
+      _signalSubscription =
+          _presenceDetector.signalStream.listen(_onSignalReceived);
 
-    _startCorruptionTimer();
+      _startCorruptionTimer();
+    } catch (_) {}
   }
 
   void _startCorruptionTimer() {
@@ -80,16 +83,20 @@ class EchoProvider extends ChangeNotifier {
   }
 
   void _onSignalReceived(PresenceSignal signal) {
-    _currentSignal = signal;
-    _corruptionLevel = CorruptionEngine.nextCorruptionLevel(_corruptionLevel, signal);
-    final newLine = CorruptionEngine.pickLine(_allLines, signal, _corruptionLevel);
-    if (newLine != null) {
-      _currentLine = newLine;
-    }
+    try {
+      _currentSignal = signal;
+      _corruptionLevel =
+          CorruptionEngine.nextCorruptionLevel(_corruptionLevel, signal);
+      final newLine =
+          CorruptionEngine.pickLine(_allLines, signal, _corruptionLevel);
+      if (newLine != null) {
+        _currentLine = newLine;
+      }
 
-    _triggerAudioAndHaptics(signal);
-    _audioService.updateAmbientIntensity(_corruptionLevel);
-    notifyListeners();
+      _triggerAudioAndHaptics(signal);
+      _audioService.updateAmbientIntensity(_corruptionLevel);
+      notifyListeners();
+    } catch (_) {}
   }
 
   void _triggerAudioAndHaptics(PresenceSignal signal) {
@@ -113,22 +120,24 @@ class EchoProvider extends ChangeNotifier {
   }
 
   void _onCorruptionTick() {
-    if (_currentSignal == PresenceSignal.idle) {
-      _corruptionLevel = CorruptionEngine.nextCorruptionLevel(
-        _corruptionLevel,
-        PresenceSignal.idle,
-      );
-      final newLine = CorruptionEngine.pickLine(
-        _allLines,
-        PresenceSignal.idle,
-        _corruptionLevel,
-      );
-      if (newLine != null) {
-        _currentLine = newLine;
+    try {
+      if (_currentSignal == PresenceSignal.idle) {
+        _corruptionLevel = CorruptionEngine.nextCorruptionLevel(
+          _corruptionLevel,
+          PresenceSignal.idle,
+        );
+        final newLine = CorruptionEngine.pickLine(
+          _allLines,
+          PresenceSignal.idle,
+          _corruptionLevel,
+        );
+        if (newLine != null) {
+          _currentLine = newLine;
+        }
+        _audioService.updateAmbientIntensity(_corruptionLevel);
+        notifyListeners();
       }
-      _audioService.updateAmbientIntensity(_corruptionLevel);
-      notifyListeners();
-    }
+    } catch (_) {}
   }
 
   void registerTouch() {
@@ -136,11 +145,13 @@ class EchoProvider extends ChangeNotifier {
   }
 
   Future<void> endSession() async {
-    _corruptionTimer?.cancel();
-    await _signalSubscription?.cancel();
-    _presenceDetector.dispose();
-    await _saveRepository.saveSessionCorruption(_corruptionLevel);
-    await _audioService.stopAmbient();
+    try {
+      _corruptionTimer?.cancel();
+      await _signalSubscription?.cancel();
+      _presenceDetector.dispose();
+      await _saveRepository.saveSessionCorruption(_corruptionLevel);
+      await _audioService.stopAmbient();
+    } catch (_) {}
   }
 
   @override
