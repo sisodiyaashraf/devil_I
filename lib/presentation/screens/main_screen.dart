@@ -7,6 +7,7 @@ import '../widgets/corrupted_text.dart';
 import '../widgets/glitch_overlay.dart';
 import '../widgets/mute_toggle_button.dart';
 import '../widgets/sanity_meter.dart';
+import '../widgets/terminal_input.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -61,6 +62,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         context.read<EchoProvider>().registerTouch();
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
         backgroundColor: AppColors.background,
         body: GlitchOverlay(
           corruptionLevel: corruption,
@@ -98,36 +100,50 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     ],
                   ),
                 ),
-                Center(
+                Positioned.fill(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 250),
-                      child: line != null
-                          ? CorruptedText(
-                              text: line.text,
-                              corruptionLevel: corruption,
-                              key: ValueKey<String>(line.text),
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: 'monospace',
-                                fontSize: 18.0,
-                                height: 1.5,
-                                color: textColor,
-                                fontWeight: FontWeight.w600,
+                    padding: const EdgeInsets.only(top: 80.0, bottom: 80.0, left: 24.0, right: 24.0),
+                    child: Center(
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 250),
+                        child: line != null
+                            ? CorruptedText(
+                                text: line.text,
+                                corruptionLevel: corruption,
+                                key: ValueKey<String>(line.text),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontSize: 18.0,
+                                  height: 1.5,
+                                  color: textColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              )
+                            : Text(
+                                _cursorVisible ? '_' : ' ',
+                                key: ValueKey<bool>(_cursorVisible),
+                                style: TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontSize: 32.0,
+                                  color: textColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            )
-                          : Text(
-                              _cursorVisible ? '_' : ' ',
-                              key: ValueKey<bool>(_cursorVisible),
-                              style: TextStyle(
-                                fontFamily: 'monospace',
-                                fontSize: 32.0,
-                                color: textColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                      ),
                     ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 16.0,
+                  left: 16.0,
+                  right: 16.0,
+                  child: TerminalInput(
+                    corruptionLevel: corruption,
+                    activePromptKey: echo.activePromptKey,
+                    onSubmit: (input) {
+                      context.read<EchoProvider>().submitUserInput(input);
+                    },
                   ),
                 ),
               ],
@@ -138,3 +154,4 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 }
+
