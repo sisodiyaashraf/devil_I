@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/session_memory.dart';
 
@@ -6,6 +7,7 @@ class MemoryRepository {
   static const String _keySessionCount = 'memory_session_count';
   static const String _keyPeakCorruption = 'memory_peak_corruption';
   static const String _keyUserLabel = 'memory_user_label';
+  static const String _keyUserAnswers = 'memory_user_answers';
 
   Future<SessionMemory> loadMemory() async {
     try {
@@ -14,6 +16,14 @@ class MemoryRepository {
       final sessionCount = prefs.getInt(_keySessionCount) ?? 0;
       final peakCorruption = prefs.getInt(_keyPeakCorruption) ?? 0;
       final userLabel = prefs.getString(_keyUserLabel);
+      final answersJson = prefs.getString(_keyUserAnswers);
+      Map<String, String> userAnswers = {};
+      if (answersJson != null) {
+        try {
+          final decoded = jsonDecode(answersJson) as Map<String, dynamic>;
+          userAnswers = decoded.map((k, v) => MapEntry(k, v.toString()));
+        } catch (_) {}
+      }
 
       final lastOpenedAt = lastOpenedMs != null
           ? DateTime.fromMillisecondsSinceEpoch(lastOpenedMs)
@@ -24,6 +34,7 @@ class MemoryRepository {
         sessionCount: sessionCount,
         peakCorruption: peakCorruption,
         userLabel: userLabel,
+        userAnswers: userAnswers,
       );
     } catch (_) {
       return SessionMemory(
@@ -60,4 +71,15 @@ class MemoryRepository {
       await prefs.setString(_keyUserLabel, label);
     } catch (_) {}
   }
+
+  Future<void> saveUserAnswer(String key, String value) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final currentMemory = await loadMemory();
+      final updatedAnswers = Map<String, String>.from(currentMemory.userAnswers);
+      updatedAnswers[key] = value;
+      await prefs.setString(_keyUserAnswers, jsonEncode(updatedAnswers));
+    } catch (_) {}
+  }
 }
+
