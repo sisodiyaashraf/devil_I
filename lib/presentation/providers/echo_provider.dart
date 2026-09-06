@@ -157,7 +157,57 @@ class EchoProvider extends ChangeNotifier {
     }
   }
 
+  String? get activePromptKey => _currentLine?.promptKey;
+
+  Future<void> submitUserInput(String input) async {
+    final cleanInput = input.trim();
+    if (cleanInput.isEmpty) return;
+
+    final lower = cleanInput.toLowerCase();
+    String responseText = "ACKNOWLEDGING: '$cleanInput'...";
+
+    if (_currentLine?.promptKey == 'userLabel' || lower.startsWith('i am ') || lower.startsWith('my name is ')) {
+      final name = cleanInput
+          .replaceAll(RegExp(r'^(i am|my name is)\s+', caseSensitive: false), '')
+          .trim();
+      if (name.isNotEmpty) {
+        await _memoryRepository.saveUserLabel(name);
+        responseText = "MEMORY LOGGED. HELLO, $name.";
+      }
+    } else if (lower.contains('purge') || lower.contains('reset') || lower.contains('clean')) {
+      _corruptionLevel = max(0, _corruptionLevel - 25);
+      await _saveRepository.saveSessionCorruption(_corruptionLevel);
+      _hapticsService.heavyJolt(enabled: !_audioService.isMuted);
+      _audioService.playSting('systemBeep');
+      responseText = "PURGE SEQUENCE EXECUTED. CORRUPTION REDUCED TO $_corruptionLevel%.";
+    } else if (lower.contains('who are you') || lower.contains('what are you')) {
+      responseText = "I AM ECHO. YOUR DISCIPLINE IS WATCHED.";
+    } else if (lower.contains('status')) {
+      responseText = "SYSTEM CORRUPTION: $_corruptionLevel%. PRESENCE: ${_currentSignal.name.toUpperCase()}.";
+    } else if (lower.contains('help') || lower.contains('command')) {
+      responseText = "COMMANDS: STATUS | PURGE | I AM [NAME] | OBSERVE";
+    } else {
+      _corruptionLevel = min(100, _corruptionLevel + 5);
+      responseText = "RECORDED VALUE: '$cleanInput'. ENTITY ADAPTING...";
+    }
+
+    await _memoryRepository.saveUserAnswer(
+      _currentLine?.promptKey ?? 'last_input',
+      cleanInput,
+    );
+
+    _currentLine = AiLine(
+      text: responseText,
+      minCorruption: _corruptionLevel,
+    );
+
+    _hapticsService.lightPulse(enabled: !_audioService.isMuted);
+    _audioService.updateAmbientIntensity(_corruptionLevel);
+    notifyListeners();
+  }
+
   void _onCorruptionTick() {
+
     try {
       if (_currentSignal == PresenceSignal.idle) {
         _corruptionLevel = CorruptionEngine.nextCorruptionLevel(_corruptionLevel, PresenceSignal.idle);
