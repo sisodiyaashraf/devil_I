@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:devil_i/data/repositories/memory_repository.dart';
-import 'package:devil_i/presentation/providers/echo_provider.dart';
-import 'package:devil_i/presentation/widgets/terminal_input.dart';
+import 'package:whispers/data/repositories/memory_repository.dart';
+import 'package:whispers/presentation/providers/echo_provider.dart';
+import 'package:whispers/presentation/widgets/terminal_input.dart';
+
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
