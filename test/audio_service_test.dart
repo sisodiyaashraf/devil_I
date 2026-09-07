@@ -45,6 +45,11 @@ class MockAudioService implements AudioService {
   }
 
   @override
+  Future<void> playStingFromDirection(String? cueKey, double balance) async {
+    lastStingCue = cueKey;
+  }
+
+  @override
   Future<void> dispose() async {}
 }
 
