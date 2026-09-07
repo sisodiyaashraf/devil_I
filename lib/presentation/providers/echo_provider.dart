@@ -6,13 +6,16 @@ import 'package:flutter/services.dart' show rootBundle;
 import '../../core/constants.dart';
 import '../../core/glitch_utils.dart';
 import '../../core/services/audio_service.dart';
+import '../../core/services/environment_service.dart';
 import '../../core/services/haptics_service.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/voice_service.dart';
 import '../../data/repositories/dialogue_repository.dart';
+import '../../data/repositories/environment_dialogue_repository.dart';
 import '../../data/repositories/memory_repository.dart';
 import '../../data/repositories/save_repository.dart';
 import '../../domain/entities/ai_line.dart';
+import '../../domain/entities/environment_line.dart';
 import '../../domain/entities/presence_signal.dart';
 import '../../domain/entities/session_memory.dart';
 import '../../domain/usecases/presence_detector.dart';
@@ -27,13 +30,17 @@ class EchoProvider extends ChangeNotifier {
   final HapticsService _hapticsService;
   final NotificationService _notificationService;
   final VoiceService _voiceService;
+  final EnvironmentService _environmentService;
+  final EnvironmentDialogueRepository _environmentDialogueRepository;
 
   PresenceSignal _currentSignal = PresenceSignal.idle;
   int _corruptionLevel = 0;
   List<AiLine> _allLines = [];
+  List<EnvironmentLine> _environmentLines = [];
   AiLine? _currentLine;
   StreamSubscription<(PresenceSignal, double)>? _signalSubscription;
   Timer? _corruptionTimer;
+  DateTime? _lastEnvironmentLineTime;
   bool _shouldShowFakePermission = false;
   bool _hasShownFakePermissionThisSession = false;
   bool _shouldShowArtifact = false;
@@ -47,6 +54,8 @@ class EchoProvider extends ChangeNotifier {
     HapticsService? hapticsService,
     NotificationService? notificationService,
     VoiceService? voiceService,
+    EnvironmentService? environmentService,
+    EnvironmentDialogueRepository? environmentDialogueRepository,
   })  : _presenceDetector = presenceDetector ?? PresenceDetector(),
         _saveRepository = saveRepository ?? SaveRepository(),
         _dialogueRepository = dialogueRepository ?? DialogueRepository(),
@@ -54,7 +63,9 @@ class EchoProvider extends ChangeNotifier {
         _audioService = audioService ?? AudioService(),
         _hapticsService = hapticsService ?? HapticsService(),
         _notificationService = notificationService ?? NotificationService(),
-        _voiceService = voiceService ?? VoiceService();
+        _voiceService = voiceService ?? VoiceService(),
+        _environmentService = environmentService ?? EnvironmentService(),
+        _environmentDialogueRepository = environmentDialogueRepository ?? EnvironmentDialogueRepository();
 
   PresenceSignal get currentSignal => _currentSignal;
   PresenceSignal? get lastSignalForGlitch => _currentSignal;
@@ -65,16 +76,19 @@ class EchoProvider extends ChangeNotifier {
   AudioService get audioService => _audioService;
   HapticsService get hapticsService => _hapticsService;
   VoiceService get voiceService => _voiceService;
+  EnvironmentService get environmentService => _environmentService;
   bool get shouldShowFakePermission => _shouldShowFakePermission;
   bool get shouldShowArtifact => _shouldShowArtifact;
 
   Future<void> startSession() async {
     try {
       await _notificationService.cancelScheduled();
+      await _notificationService.clearPersistentPresenceNotice();
       await _audioService.loadMuteState();
       await _voiceService.init();
       await _audioService.playAmbient();
 
+      _environmentLines = await _environmentDialogueRepository.loadLines();
       final prevMemory = await _memoryRepository.loadMemory();
       await _memoryRepository.recordSessionStart();
       final currMemory = await _memoryRepository.loadMemory();
