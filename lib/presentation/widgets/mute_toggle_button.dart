@@ -19,6 +19,8 @@ class _MuteToggleButtonState extends State<MuteToggleButton> {
   Widget build(BuildContext context) {
     final isMuted = widget.audioService.isMuted;
     return IconButton(
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
       icon: Icon(
         isMuted ? Icons.volume_off : Icons.volume_up,
         color: isMuted ? AppColors.staticGray : AppColors.terminalGreen,
