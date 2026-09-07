@@ -90,6 +90,10 @@ class AudioService {
   }
 
   Future<void> playSting(String? cueKey) async {
+    await playStingFromDirection(cueKey, 0.0);
+  }
+
+  Future<void> playStingFromDirection(String? cueKey, double balance) async {
     if (cueKey == null || _isMuted) return;
     final now = DateTime.now();
     if (_lastStingTime != null &&
@@ -102,6 +106,7 @@ class AudioService {
 
     try {
       await _stingPlayer.stop();
+      await _stingPlayer.setBalance(balance.clamp(-1.0, 1.0));
       await _stingPlayer.setReleaseMode(ReleaseMode.release);
       await _stingPlayer.setVolume(_isMuted ? 0.0 : 0.8);
       await _stingPlayer.play(AssetSource(path));

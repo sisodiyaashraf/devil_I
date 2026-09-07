@@ -11,6 +11,11 @@ class GlitchUtils {
     return _random.nextDouble() < probability;
   }
 
+  static bool shouldShowArtifact(int corruptionLevel) {
+    if (corruptionLevel < 70) return false;
+    return _random.nextDouble() < 0.02;
+  }
+
   static bool shouldHardTrigger(PresenceSignal? signal) {
     return signal == PresenceSignal.pickedUp;
   }
