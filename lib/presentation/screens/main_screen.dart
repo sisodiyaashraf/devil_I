@@ -82,48 +82,50 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'SYSTEM CORRUPTION: $corruption%',
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: TextStyle(
-                                fontFamily: 'monospace',
-                                fontSize: 11.0,
-                                color: textColor.withValues(alpha: 0.8),
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.0,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 4.0),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              MuteToggleButton(audioService: echo.audioService),
-                              const SizedBox(width: 6.0),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (_) => const CorruptionReportScreen()),
-                                  );
-                                },
-                                child: Text(
-                                  '[EXIT]',
-                                  style: TextStyle(
-                                    fontFamily: 'monospace',
-                                    fontSize: 11.0,
-                                    color: textColor.withValues(alpha: 0.7),
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                      ClipRect(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'SYSTEM CORRUPTION: $corruption%',
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontSize: 11.0,
+                                  color: textColor.withValues(alpha: 0.8),
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.0,
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                            const SizedBox(width: 4.0),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                MuteToggleButton(audioService: echo.audioService),
+                                const SizedBox(width: 6.0),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (_) => const CorruptionReportScreen()),
+                                    );
+                                  },
+                                  child: Text(
+                                    '[EXIT]',
+                                    style: TextStyle(
+                                      fontFamily: 'monospace',
+                                      fontSize: 11.0,
+                                      color: textColor.withValues(alpha: 0.7),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 6.0),
                       SanityMeter(corruptionLevel: corruption),
