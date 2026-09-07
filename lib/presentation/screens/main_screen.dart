@@ -85,20 +85,26 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'SYSTEM CORRUPTION: $corruption%',
-                            style: TextStyle(
-                              fontFamily: 'monospace',
-                              fontSize: 12.0,
-                              color: textColor.withValues(alpha: 0.8),
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.2,
+                          Expanded(
+                            child: Text(
+                              'SYSTEM CORRUPTION: $corruption%',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 11.0,
+                                color: textColor.withValues(alpha: 0.8),
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.0,
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 4.0),
                           Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               MuteToggleButton(audioService: echo.audioService),
-                              const SizedBox(width: 8.0),
+                              const SizedBox(width: 6.0),
                               GestureDetector(
                                 onTap: () {
                                   Navigator.of(context).push(
