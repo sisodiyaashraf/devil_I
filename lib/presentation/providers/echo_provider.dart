@@ -134,7 +134,37 @@ class EchoProvider extends ChangeNotifier {
     _startCorruptionTimer();
   }
 
-  void _onSignalReceived(PresenceSignal signal) {
+  void dismissFakePermission([String? responseText]) {
+    _shouldShowFakePermission = false;
+    if (responseText != null && responseText.isNotEmpty) {
+      _currentLine = AiLine(text: responseText, minCorruption: _corruptionLevel);
+    }
+    _hapticsService.heavyJolt(enabled: !isMuted);
+    _audioService.playSting('systemBeep');
+    notifyListeners();
+  }
+
+  void _checkFakePermissionTrigger() {
+    if (!_hasShownFakePermissionThisSession && _corruptionLevel >= 50) {
+      _hasShownFakePermissionThisSession = true;
+      _shouldShowFakePermission = true;
+    }
+  }
+
+  void _checkArtifactTrigger() {
+    if (GlitchUtils.shouldShowArtifact(_corruptionLevel)) {
+      _shouldShowArtifact = true;
+      notifyListeners();
+      Future.delayed(const Duration(milliseconds: 300), () {
+        _shouldShowArtifact = false;
+        notifyListeners();
+      });
+    }
+  }
+
+  void _onSignalReceived((PresenceSignal, double) event) {
+    final signal = event.$1;
+    final lastX = event.$2;
     try {
       _currentSignal = signal;
       _corruptionLevel = CorruptionEngine.nextCorruptionLevel(_corruptionLevel, signal);
@@ -142,8 +172,17 @@ class EchoProvider extends ChangeNotifier {
       final newLine = CorruptionEngine.pickLine(_allLines, signal, _corruptionLevel);
       if (newLine != null) _currentLine = newLine;
 
-      _triggerAudioAndHaptics(signal);
+      if (signal == PresenceSignal.tilted) {
+        final balance = (lastX / 6.0).clamp(-1.0, 1.0);
+        _audioService.playStingFromDirection('static', balance);
+        _hapticsService.lightPulse(enabled: !isMuted);
+      } else {
+        _triggerAudioAndHaptics(signal);
+      }
+
       _audioService.updateAmbientIntensity(_corruptionLevel);
+      _checkFakePermissionTrigger();
+      _checkArtifactTrigger();
       notifyListeners();
     } catch (_) {}
   }
@@ -213,7 +252,6 @@ class EchoProvider extends ChangeNotifier {
   }
 
   void _onCorruptionTick() {
-
     try {
       if (_currentSignal == PresenceSignal.idle) {
         _corruptionLevel = CorruptionEngine.nextCorruptionLevel(_corruptionLevel, PresenceSignal.idle);
@@ -221,6 +259,8 @@ class EchoProvider extends ChangeNotifier {
         final newLine = CorruptionEngine.pickLine(_allLines, PresenceSignal.idle, _corruptionLevel);
         if (newLine != null) _currentLine = newLine;
         _audioService.updateAmbientIntensity(_corruptionLevel);
+        _checkFakePermissionTrigger();
+        _checkArtifactTrigger();
         notifyListeners();
       }
     } catch (_) {}
