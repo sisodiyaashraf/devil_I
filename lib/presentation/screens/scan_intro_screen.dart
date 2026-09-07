@@ -147,7 +147,7 @@ class _ScanIntroScreenState extends State<ScanIntroScreen> {
                           )),
                       if (_currentLineText.isNotEmpty)
                         Text(
-                          '$_currentLineText_',
+                          '${_currentLineText}_',
                           style: TextStyle(
                             fontFamily: 'monospace',
                             fontSize: 14.0,
