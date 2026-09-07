@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/voice_service.dart';
 import 'core/theme.dart';
 import 'data/repositories/dialogue_repository.dart';
 import 'data/repositories/memory_repository.dart';
 import 'data/repositories/save_repository.dart';
 import 'domain/usecases/presence_detector.dart';
 import 'presentation/providers/echo_provider.dart';
-import 'presentation/screens/main_screen.dart';
+import 'presentation/screens/scan_intro_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +38,7 @@ class EchoApp extends StatelessWidget {
             dialogueRepository: DialogueRepository(),
             memoryRepository: MemoryRepository(),
             notificationService: notificationService ?? NotificationService(),
+            voiceService: VoiceService(),
           )..startSession(),
         ),
       ],
@@ -44,7 +46,7 @@ class EchoApp extends StatelessWidget {
         title: 'ECHO',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.dark,
-        home: const MainScreen(),
+        home: const ScanIntroScreen(),
       ),
     );
   }

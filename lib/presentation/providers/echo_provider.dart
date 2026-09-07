@@ -260,6 +260,9 @@ class EchoProvider extends ChangeNotifier {
       minCorruption: _corruptionLevel,
     );
 
+    _voiceService.stop();
+    _voiceService.speak(responseText, enabled: !isMuted);
+
     _hapticsService.lightPulse(enabled: !_audioService.isMuted);
     _audioService.updateAmbientIntensity(_corruptionLevel);
     notifyListeners();
