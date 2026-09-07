@@ -282,6 +282,38 @@ class EchoProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _checkEnvironmentLine() async {
+    if (_environmentLines.isEmpty) return;
+    final now = DateTime.now();
+    if (_lastEnvironmentLineTime != null &&
+        now.difference(_lastEnvironmentLineTime!) < const Duration(seconds: 60)) {
+      return;
+    }
+
+    try {
+      final isNight = _environmentService.isNightHours();
+      final isLowBat = await _environmentService.isLowBattery();
+
+      if (!isNight && !isLowBat) return;
+
+      final candidates = _environmentLines.where((line) {
+        if (line.minCorruption > _corruptionLevel) return false;
+        if (line.requiresNight && !isNight) return false;
+        if (line.requiresLowBattery && !isLowBat) return false;
+        return true;
+      }).toList();
+
+      if (candidates.isNotEmpty) {
+        final selected = candidates[Random().nextInt(candidates.length)];
+        _currentLine = AiLine(text: selected.text, minCorruption: selected.minCorruption);
+        _lastEnvironmentLineTime = now;
+        _voiceService.stop();
+        _voiceService.speak(selected.text, enabled: !isMuted);
+        notifyListeners();
+      }
+    } catch (_) {}
+  }
+
   void _onCorruptionTick() {
     try {
       if (_currentSignal == PresenceSignal.idle) {
@@ -292,6 +324,7 @@ class EchoProvider extends ChangeNotifier {
         _audioService.updateAmbientIntensity(_corruptionLevel);
         _checkFakePermissionTrigger();
         _checkArtifactTrigger();
+        _checkEnvironmentLine();
         notifyListeners();
       }
     } catch (_) {}
@@ -310,6 +343,7 @@ class EchoProvider extends ChangeNotifier {
       await _memoryRepository.recordPeakCorruption(_corruptionLevel);
       await _audioService.stopAmbient();
       if (!isMuted) {
+        await _notificationService.showPersistentPresenceNotice(enabled: true);
         await _notificationService.scheduleUnsettlingNotification(enabled: true);
       }
     } catch (_) {}
