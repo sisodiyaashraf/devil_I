@@ -36,6 +36,8 @@ void main() {
 
       await tester.pumpWidget(const EchoApp());
       await tester.pump();
+      await tester.tap(find.byType(EchoApp));
+      await tester.pumpAndSettle();
 
       expect(find.textContaining('SYSTEM CORRUPTION'), findsOneWidget);
     });
