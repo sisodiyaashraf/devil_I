@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../../core/constants.dart';
+import '../../core/glitch_utils.dart';
 import '../../core/services/audio_service.dart';
 import '../../core/services/haptics_service.dart';
 import '../../core/services/notification_service.dart';
@@ -29,8 +30,11 @@ class EchoProvider extends ChangeNotifier {
   int _corruptionLevel = 0;
   List<AiLine> _allLines = [];
   AiLine? _currentLine;
-  StreamSubscription<PresenceSignal>? _signalSubscription;
+  StreamSubscription<(PresenceSignal, double)>? _signalSubscription;
   Timer? _corruptionTimer;
+  bool _shouldShowFakePermission = false;
+  bool _hasShownFakePermissionThisSession = false;
+  bool _shouldShowArtifact = false;
 
   EchoProvider({
     PresenceDetector? presenceDetector,
@@ -56,6 +60,8 @@ class EchoProvider extends ChangeNotifier {
   PresenceDetector get presenceDetector => _presenceDetector;
   AudioService get audioService => _audioService;
   HapticsService get hapticsService => _hapticsService;
+  bool get shouldShowFakePermission => _shouldShowFakePermission;
+  bool get shouldShowArtifact => _shouldShowArtifact;
 
   Future<void> startSession() async {
     try {
