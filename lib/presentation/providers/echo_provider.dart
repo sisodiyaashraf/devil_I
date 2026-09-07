@@ -8,6 +8,7 @@ import '../../core/glitch_utils.dart';
 import '../../core/services/audio_service.dart';
 import '../../core/services/haptics_service.dart';
 import '../../core/services/notification_service.dart';
+import '../../core/services/voice_service.dart';
 import '../../data/repositories/dialogue_repository.dart';
 import '../../data/repositories/memory_repository.dart';
 import '../../data/repositories/save_repository.dart';
@@ -25,6 +26,7 @@ class EchoProvider extends ChangeNotifier {
   final AudioService _audioService;
   final HapticsService _hapticsService;
   final NotificationService _notificationService;
+  final VoiceService _voiceService;
 
   PresenceSignal _currentSignal = PresenceSignal.idle;
   int _corruptionLevel = 0;
@@ -44,13 +46,15 @@ class EchoProvider extends ChangeNotifier {
     AudioService? audioService,
     HapticsService? hapticsService,
     NotificationService? notificationService,
+    VoiceService? voiceService,
   })  : _presenceDetector = presenceDetector ?? PresenceDetector(),
         _saveRepository = saveRepository ?? SaveRepository(),
         _dialogueRepository = dialogueRepository ?? DialogueRepository(),
         _memoryRepository = memoryRepository ?? MemoryRepository(),
         _audioService = audioService ?? AudioService(),
         _hapticsService = hapticsService ?? HapticsService(),
-        _notificationService = notificationService ?? NotificationService();
+        _notificationService = notificationService ?? NotificationService(),
+        _voiceService = voiceService ?? VoiceService();
 
   PresenceSignal get currentSignal => _currentSignal;
   PresenceSignal? get lastSignalForGlitch => _currentSignal;
@@ -60,6 +64,7 @@ class EchoProvider extends ChangeNotifier {
   PresenceDetector get presenceDetector => _presenceDetector;
   AudioService get audioService => _audioService;
   HapticsService get hapticsService => _hapticsService;
+  VoiceService get voiceService => _voiceService;
   bool get shouldShowFakePermission => _shouldShowFakePermission;
   bool get shouldShowArtifact => _shouldShowArtifact;
 
@@ -67,6 +72,7 @@ class EchoProvider extends ChangeNotifier {
     try {
       await _notificationService.cancelScheduled();
       await _audioService.loadMuteState();
+      await _voiceService.init();
       await _audioService.playAmbient();
 
       final prevMemory = await _memoryRepository.loadMemory();
@@ -110,6 +116,8 @@ class EchoProvider extends ChangeNotifier {
             .replaceAll('{userLabel}', prev.userLabel ?? '');
 
         _currentLine = AiLine(text: text, minCorruption: 0);
+        await _voiceService.stop();
+        await _voiceService.speak(text, enabled: !isMuted);
         notifyListeners();
         await Future.delayed(const Duration(seconds: 4));
       }
@@ -138,6 +146,8 @@ class EchoProvider extends ChangeNotifier {
     _shouldShowFakePermission = false;
     if (responseText != null && responseText.isNotEmpty) {
       _currentLine = AiLine(text: responseText, minCorruption: _corruptionLevel);
+      _voiceService.stop();
+      _voiceService.speak(responseText, enabled: !isMuted);
     }
     _hapticsService.heavyJolt(enabled: !isMuted);
     _audioService.playSting('systemBeep');
@@ -170,7 +180,11 @@ class EchoProvider extends ChangeNotifier {
       _corruptionLevel = CorruptionEngine.nextCorruptionLevel(_corruptionLevel, signal);
       _memoryRepository.recordPeakCorruption(_corruptionLevel);
       final newLine = CorruptionEngine.pickLine(_allLines, signal, _corruptionLevel);
-      if (newLine != null) _currentLine = newLine;
+      if (newLine != null) {
+        _currentLine = newLine;
+        _voiceService.stop();
+        _voiceService.speak(newLine.text, enabled: !isMuted);
+      }
 
       if (signal == PresenceSignal.tilted) {
         final balance = (lastX / 6.0).clamp(-1.0, 1.0);
