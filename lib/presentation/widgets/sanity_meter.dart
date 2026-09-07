@@ -78,9 +78,11 @@ class SanityMeter extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: SizedBox(
               width: activeWidth,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: segments,
+              child: ClipRect(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: segments,
+                ),
               ),
             ),
           );
