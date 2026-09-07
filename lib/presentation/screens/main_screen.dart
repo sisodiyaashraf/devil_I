@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../providers/echo_provider.dart';
+import '../screens/corruption_report_screen.dart';
 import '../widgets/corrupted_text.dart';
 import '../widgets/corruption_artifact.dart';
 import '../widgets/fake_permission_dialog.dart';
@@ -94,7 +95,28 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                               letterSpacing: 1.2,
                             ),
                           ),
-                          MuteToggleButton(audioService: echo.audioService),
+                          Row(
+                            children: [
+                              MuteToggleButton(audioService: echo.audioService),
+                              const SizedBox(width: 8.0),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(builder: (_) => const CorruptionReportScreen()),
+                                  );
+                                },
+                                child: Text(
+                                  '[EXIT]',
+                                  style: TextStyle(
+                                    fontFamily: 'monospace',
+                                    fontSize: 11.0,
+                                    color: textColor.withValues(alpha: 0.7),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                       const SizedBox(height: 6.0),
