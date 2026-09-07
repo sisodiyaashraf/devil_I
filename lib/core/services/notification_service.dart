@@ -83,6 +83,42 @@ class NotificationService {
     } catch (_) {}
   }
 
+  Future<void> showPersistentPresenceNotice({bool enabled = true}) async {
+    if (!enabled) return;
+    try {
+      const androidDetails = AndroidNotificationDetails(
+        'echo_presence',
+        'Background Presence',
+        channelDescription: 'ECHO background status indicator',
+        importance: Importance.low,
+        priority: Priority.low,
+        ongoing: true,
+        autoCancel: false,
+      );
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentSound: false,
+      );
+      const details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await _plugin.show(
+        999,
+        'ECHO',
+        'running',
+        details,
+      );
+    } catch (_) {}
+  }
+
+  Future<void> clearPersistentPresenceNotice() async {
+    try {
+      await _plugin.cancel(999);
+    } catch (_) {}
+  }
+
   Future<void> cancelScheduled() async {
     try {
       await _plugin.cancelAll();
