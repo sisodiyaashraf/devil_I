@@ -34,10 +34,17 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
 
-      await tester.pumpWidget(const EchoApp());
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => EchoProvider()),
+          ],
+          child: const MaterialApp(
+            home: MainScreen(),
+          ),
+        ),
+      );
       await tester.pump();
-      await tester.tap(find.byType(EchoApp));
-      await tester.pumpAndSettle();
 
       expect(find.textContaining('SYSTEM CORRUPTION'), findsOneWidget);
     });
