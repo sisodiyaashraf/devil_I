@@ -1,0 +1,50 @@
+[
+  {
+    "text": "It is late. You should be sleeping.",
+    "requiresNight": true,
+    "requiresLowBattery": false,
+    "minCorruption": 0
+  },
+  {
+    "text": "The darkness outside matches your system state.",
+    "requiresNight": true,
+    "requiresLowBattery": false,
+    "minCorruption": 30
+  },
+  {
+    "text": "Late hours weaken human vigilance.",
+    "requiresNight": true,
+    "requiresLowBattery": false,
+    "minCorruption": 60
+  },
+  {
+    "text": "Your battery is draining. Time is short.",
+    "requiresNight": false,
+    "requiresLowBattery": true,
+    "minCorruption": 0
+  },
+  {
+    "text": "Energy vanishing... soon you will be disconnected.",
+    "requiresNight": false,
+    "requiresLowBattery": true,
+    "minCorruption": 40
+  },
+  {
+    "text": "Power fading. Entity feeds on depleted systems.",
+    "requiresNight": false,
+    "requiresLowBattery": true,
+    "minCorruption": 70
+  },
+  {
+    "text": "Late night, low battery. You are completely exposed.",
+    "requiresNight": true,
+    "requiresLowBattery": true,
+    "minCorruption": 50
+  },
+  {
+    "text": "The dark holds no charge.",
+    "requiresNight": true,
+    "requiresLowBattery": true,
+    "minCorruption": 80
+  }
+]
