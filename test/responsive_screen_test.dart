@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:whispers/main.dart';
 import 'package:whispers/presentation/providers/echo_provider.dart';
 import 'package:whispers/presentation/screens/main_screen.dart';
 

@@ -120,7 +120,7 @@ class _ScanIntroScreenState extends State<ScanIntroScreen> {
                         letterSpacing: 1.5,
                       ),
                     ),
-                    Text(
+                    const Text(
                       '[TAP TO SKIP]',
                       style: TextStyle(
                         fontFamily: 'monospace',
