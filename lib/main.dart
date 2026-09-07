@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'core/services/environment_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/voice_service.dart';
 import 'core/theme.dart';
 import 'data/repositories/dialogue_repository.dart';
+import 'data/repositories/environment_dialogue_repository.dart';
 import 'data/repositories/memory_repository.dart';
 import 'data/repositories/save_repository.dart';
 import 'domain/usecases/presence_detector.dart';
@@ -39,6 +41,8 @@ class EchoApp extends StatelessWidget {
             memoryRepository: MemoryRepository(),
             notificationService: notificationService ?? NotificationService(),
             voiceService: VoiceService(),
+            environmentService: EnvironmentService(),
+            environmentDialogueRepository: EnvironmentDialogueRepository(),
           )..startSession(),
         ),
       ],
