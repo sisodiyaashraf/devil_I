@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../providers/echo_provider.dart';
 import '../widgets/corrupted_text.dart';
+import '../widgets/corruption_artifact.dart';
+import '../widgets/fake_permission_dialog.dart';
 import '../widgets/glitch_overlay.dart';
 import '../widgets/mute_toggle_button.dart';
 import '../widgets/sanity_meter.dart';
@@ -146,6 +148,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     },
                   ),
                 ),
+                if (echo.shouldShowArtifact)
+                  const CorruptionArtifact(),
+                if (echo.shouldShowFakePermission)
+                  FakePermissionDialog(
+                    onDismiss: (responseText) {
+                      echo.dismissFakePermission(responseText);
+                    },
+                  ),
               ],
             ),
           ),
