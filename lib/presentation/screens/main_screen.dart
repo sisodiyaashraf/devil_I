@@ -6,6 +6,7 @@ import '../providers/echo_provider.dart';
 import '../screens/corruption_report_screen.dart';
 import '../widgets/corrupted_text.dart';
 import '../widgets/corruption_artifact.dart';
+import '../widgets/fake_camera_overlay.dart';
 import '../widgets/fake_permission_dialog.dart';
 import '../widgets/glitch_overlay.dart';
 import '../widgets/mute_toggle_button.dart';
@@ -186,6 +187,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       echo.dismissFakePermission(responseText);
                     },
                   ),
+                if (echo.shouldShowFakeCamera)
+                  FakeCameraOverlay(
+                    onDismiss: () {
+                      echo.dismissFakeCamera();
+                    },
+                  ),
               ],
             ),
           ),
@@ -194,4 +201,5 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 }
+
 

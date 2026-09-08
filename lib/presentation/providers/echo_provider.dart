@@ -18,6 +18,7 @@ import '../../domain/entities/ai_line.dart';
 import '../../domain/entities/environment_line.dart';
 import '../../domain/entities/presence_signal.dart';
 import '../../domain/entities/session_memory.dart';
+import '../../domain/usecases/engagement_tracker.dart';
 import '../../domain/usecases/presence_detector.dart';
 import 'corruption_engine.dart';
 
@@ -32,6 +33,7 @@ class EchoProvider extends ChangeNotifier {
   final VoiceService _voiceService;
   final EnvironmentService _environmentService;
   final EnvironmentDialogueRepository _environmentDialogueRepository;
+  final EngagementTracker _engagementTracker = EngagementTracker();
 
   PresenceSignal _currentSignal = PresenceSignal.idle;
   int _corruptionLevel = 0;
@@ -43,6 +45,8 @@ class EchoProvider extends ChangeNotifier {
   DateTime? _lastEnvironmentLineTime;
   bool _shouldShowFakePermission = false;
   bool _hasShownFakePermissionThisSession = false;
+  bool _shouldShowFakeCamera = false;
+  bool _hasShownFakeCameraThisSession = false;
   bool _shouldShowArtifact = false;
 
   EchoProvider({
@@ -77,11 +81,14 @@ class EchoProvider extends ChangeNotifier {
   HapticsService get hapticsService => _hapticsService;
   VoiceService get voiceService => _voiceService;
   EnvironmentService get environmentService => _environmentService;
+  EngagementTracker get engagementTracker => _engagementTracker;
   bool get shouldShowFakePermission => _shouldShowFakePermission;
+  bool get shouldShowFakeCamera => _shouldShowFakeCamera;
   bool get shouldShowArtifact => _shouldShowArtifact;
 
   Future<void> startSession() async {
     try {
+      _engagementTracker.reset();
       await _notificationService.cancelScheduled();
       await _notificationService.clearPersistentPresenceNotice();
       await _audioService.loadMuteState();
@@ -168,10 +175,28 @@ class EchoProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void dismissFakeCamera() {
+    _shouldShowFakeCamera = false;
+    const responseText = "That's not a real feed. But you looked.";
+    _currentLine = AiLine(text: responseText, minCorruption: _corruptionLevel);
+    _voiceService.stop();
+    _voiceService.speak(responseText, enabled: !isMuted);
+    _hapticsService.heavyJolt(enabled: !isMuted);
+    _audioService.playSting('systemBeep');
+    notifyListeners();
+  }
+
   void _checkFakePermissionTrigger() {
     if (!_hasShownFakePermissionThisSession && _corruptionLevel >= 50) {
       _hasShownFakePermissionThisSession = true;
       _shouldShowFakePermission = true;
+    }
+  }
+
+  void _checkFakeCameraTrigger() {
+    if (!_hasShownFakeCameraThisSession && _corruptionLevel >= 65) {
+      _hasShownFakeCameraThisSession = true;
+      _shouldShowFakeCamera = true;
     }
   }
 
@@ -191,9 +216,11 @@ class EchoProvider extends ChangeNotifier {
     final lastX = event.$2;
     try {
       _currentSignal = signal;
-      _corruptionLevel = CorruptionEngine.nextCorruptionLevel(_corruptionLevel, signal);
+      _engagementTracker.tick(1);
+      final mult = _engagementTracker.scareFrequencyMultiplier;
+      _corruptionLevel = CorruptionEngine.nextCorruptionLevel(_corruptionLevel, signal, mult);
       _memoryRepository.recordPeakCorruption(_corruptionLevel);
-      final newLine = CorruptionEngine.pickLine(_allLines, signal, _corruptionLevel);
+      final newLine = CorruptionEngine.pickLine(_allLines, signal, _corruptionLevel, multiplier: mult);
       if (newLine != null) {
         _currentLine = newLine;
         _voiceService.stop();
@@ -210,6 +237,7 @@ class EchoProvider extends ChangeNotifier {
 
       _audioService.updateAmbientIntensity(_corruptionLevel);
       _checkFakePermissionTrigger();
+      _checkFakeCameraTrigger();
       _checkArtifactTrigger();
       notifyListeners();
     } catch (_) {}
@@ -317,12 +345,15 @@ class EchoProvider extends ChangeNotifier {
   void _onCorruptionTick() {
     try {
       if (_currentSignal == PresenceSignal.idle) {
-        _corruptionLevel = CorruptionEngine.nextCorruptionLevel(_corruptionLevel, PresenceSignal.idle);
+        _engagementTracker.tick(AppConstants.corruptionTickIntervalSeconds);
+        final mult = _engagementTracker.scareFrequencyMultiplier;
+        _corruptionLevel = CorruptionEngine.nextCorruptionLevel(_corruptionLevel, PresenceSignal.idle, mult);
         _memoryRepository.recordPeakCorruption(_corruptionLevel);
-        final newLine = CorruptionEngine.pickLine(_allLines, PresenceSignal.idle, _corruptionLevel);
+        final newLine = CorruptionEngine.pickLine(_allLines, PresenceSignal.idle, _corruptionLevel, multiplier: mult);
         if (newLine != null) _currentLine = newLine;
         _audioService.updateAmbientIntensity(_corruptionLevel);
         _checkFakePermissionTrigger();
+        _checkFakeCameraTrigger();
         _checkArtifactTrigger();
         _checkEnvironmentLine();
         notifyListeners();
@@ -330,7 +361,10 @@ class EchoProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
-  void registerTouch() => _presenceDetector.registerTouch();
+  void registerTouch() {
+    _engagementTracker.recordTouch();
+    _presenceDetector.registerTouch();
+  }
 
   Future<void> saveUserLabel(String label) async => _memoryRepository.saveUserLabel(label);
 
@@ -358,3 +392,4 @@ class EchoProvider extends ChangeNotifier {
     super.dispose();
   }
 }
+
