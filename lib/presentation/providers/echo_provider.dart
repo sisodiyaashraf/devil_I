@@ -12,12 +12,16 @@ import '../../core/services/notification_service.dart';
 import '../../core/services/voice_service.dart';
 import '../../data/repositories/dialogue_repository.dart';
 import '../../data/repositories/environment_dialogue_repository.dart';
+import '../../data/repositories/lore_repository.dart';
 import '../../data/repositories/memory_repository.dart';
 import '../../data/repositories/save_repository.dart';
 import '../../domain/entities/ai_line.dart';
+import '../../domain/entities/dialogue_fragment.dart';
 import '../../domain/entities/environment_line.dart';
 import '../../domain/entities/presence_signal.dart';
 import '../../domain/entities/session_memory.dart';
+import '../../domain/usecases/behavior_profile.dart';
+import '../../domain/usecases/dialogue_composer.dart';
 import '../../domain/usecases/engagement_tracker.dart';
 import '../../domain/usecases/presence_detector.dart';
 import 'corruption_engine.dart';
@@ -27,6 +31,7 @@ class EchoProvider extends ChangeNotifier {
   final SaveRepository _saveRepository;
   final DialogueRepository _dialogueRepository;
   final MemoryRepository _memoryRepository;
+  final LoreRepository _loreRepository;
   final AudioService _audioService;
   final HapticsService _hapticsService;
   final NotificationService _notificationService;
@@ -34,11 +39,15 @@ class EchoProvider extends ChangeNotifier {
   final EnvironmentService _environmentService;
   final EnvironmentDialogueRepository _environmentDialogueRepository;
   final EngagementTracker _engagementTracker = EngagementTracker();
+  final BehaviorProfile _behaviorProfile = BehaviorProfile();
+  final DialogueComposer _dialogueComposer = DialogueComposer();
 
   PresenceSignal _currentSignal = PresenceSignal.idle;
   int _corruptionLevel = 0;
   List<AiLine> _allLines = [];
+  List<DialogueFragment> _fragments = [];
   List<EnvironmentLine> _environmentLines = [];
+  final Map<String, int> _fragmentUsageCounts = {};
   AiLine? _currentLine;
   StreamSubscription<(PresenceSignal, double)>? _signalSubscription;
   Timer? _corruptionTimer;
@@ -54,6 +63,7 @@ class EchoProvider extends ChangeNotifier {
     SaveRepository? saveRepository,
     DialogueRepository? dialogueRepository,
     MemoryRepository? memoryRepository,
+    LoreRepository? loreRepository,
     AudioService? audioService,
     HapticsService? hapticsService,
     NotificationService? notificationService,
@@ -64,6 +74,7 @@ class EchoProvider extends ChangeNotifier {
         _saveRepository = saveRepository ?? SaveRepository(),
         _dialogueRepository = dialogueRepository ?? DialogueRepository(),
         _memoryRepository = memoryRepository ?? MemoryRepository(),
+        _loreRepository = loreRepository ?? LoreRepository(),
         _audioService = audioService ?? AudioService(),
         _hapticsService = hapticsService ?? HapticsService(),
         _notificationService = notificationService ?? NotificationService(),
@@ -82,6 +93,7 @@ class EchoProvider extends ChangeNotifier {
   VoiceService get voiceService => _voiceService;
   EnvironmentService get environmentService => _environmentService;
   EngagementTracker get engagementTracker => _engagementTracker;
+  BehaviorProfile get behaviorProfile => _behaviorProfile;
   bool get shouldShowFakePermission => _shouldShowFakePermission;
   bool get shouldShowFakeCamera => _shouldShowFakeCamera;
   bool get shouldShowArtifact => _shouldShowArtifact;
@@ -89,6 +101,8 @@ class EchoProvider extends ChangeNotifier {
   Future<void> startSession() async {
     try {
       _engagementTracker.reset();
+      _behaviorProfile.reset();
+      _fragmentUsageCounts.clear();
       await _notificationService.cancelScheduled();
       await _notificationService.clearPersistentPresenceNotice();
       await _audioService.loadMuteState();
@@ -96,6 +110,7 @@ class EchoProvider extends ChangeNotifier {
       await _audioService.playAmbient();
 
       _environmentLines = await _environmentDialogueRepository.loadLines();
+      _fragments = await _dialogueRepository.loadFragments();
       final prevMemory = await _memoryRepository.loadMemory();
       await _memoryRepository.recordSessionStart();
       final currMemory = await _memoryRepository.loadMemory();
@@ -109,6 +124,20 @@ class EchoProvider extends ChangeNotifier {
       if (currMemory.sessionCount > 1) {
         await _showMemoryLine(prevMemory, currMemory.sessionCount);
       }
+
+      if (currMemory.sessionCount >= 2 && (currMemory.sessionCount % 3 == 0 || Random().nextDouble() < 0.3)) {
+        final shownLore = await _memoryRepository.getShownLore();
+        final loreItem = await _loreRepository.pickUnseenLore(currMemory.sessionCount, shownLore);
+        if (loreItem != null) {
+          _currentLine = AiLine(text: loreItem.text, minCorruption: 0);
+          await _memoryRepository.markLoreShown(loreItem.text);
+          await _voiceService.stop();
+          await _voiceService.speak(loreItem.text, enabled: !isMuted);
+          notifyListeners();
+          await Future.delayed(const Duration(seconds: 4));
+        }
+      }
+
       notifyListeners();
 
       _presenceDetector.start();
@@ -217,10 +246,25 @@ class EchoProvider extends ChangeNotifier {
     try {
       _currentSignal = signal;
       _engagementTracker.tick(1);
+      _behaviorProfile.tick(1);
+      if (signal == PresenceSignal.tilted) {
+        _behaviorProfile.recordTilt();
+      }
       final mult = _engagementTracker.scareFrequencyMultiplier;
       _corruptionLevel = CorruptionEngine.nextCorruptionLevel(_corruptionLevel, signal, mult);
       _memoryRepository.recordPeakCorruption(_corruptionLevel);
-      final newLine = CorruptionEngine.pickLine(_allLines, signal, _corruptionLevel, multiplier: mult);
+
+      final composedText = _dialogueComposer.compose(
+        _fragments,
+        signal,
+        _corruptionLevel,
+        _behaviorProfile.currentPattern,
+        _fragmentUsageCounts,
+      );
+      final newLine = composedText != null
+          ? AiLine(text: composedText, minCorruption: _corruptionLevel)
+          : CorruptionEngine.pickLine(_allLines, signal, _corruptionLevel, multiplier: mult);
+
       if (newLine != null) {
         _currentLine = newLine;
         _voiceService.stop();
@@ -346,10 +390,22 @@ class EchoProvider extends ChangeNotifier {
     try {
       if (_currentSignal == PresenceSignal.idle) {
         _engagementTracker.tick(AppConstants.corruptionTickIntervalSeconds);
+        _behaviorProfile.tick(AppConstants.corruptionTickIntervalSeconds);
         final mult = _engagementTracker.scareFrequencyMultiplier;
         _corruptionLevel = CorruptionEngine.nextCorruptionLevel(_corruptionLevel, PresenceSignal.idle, mult);
         _memoryRepository.recordPeakCorruption(_corruptionLevel);
-        final newLine = CorruptionEngine.pickLine(_allLines, PresenceSignal.idle, _corruptionLevel, multiplier: mult);
+
+        final composedText = _dialogueComposer.compose(
+          _fragments,
+          PresenceSignal.idle,
+          _corruptionLevel,
+          _behaviorProfile.currentPattern,
+          _fragmentUsageCounts,
+        );
+        final newLine = composedText != null
+            ? AiLine(text: composedText, minCorruption: _corruptionLevel)
+            : CorruptionEngine.pickLine(_allLines, PresenceSignal.idle, _corruptionLevel, multiplier: mult);
+
         if (newLine != null) _currentLine = newLine;
         _audioService.updateAmbientIntensity(_corruptionLevel);
         _checkFakePermissionTrigger();
@@ -363,6 +419,7 @@ class EchoProvider extends ChangeNotifier {
 
   void registerTouch() {
     _engagementTracker.recordTouch();
+    _behaviorProfile.recordTouch();
     _presenceDetector.registerTouch();
   }
 
@@ -392,4 +449,5 @@ class EchoProvider extends ChangeNotifier {
     super.dispose();
   }
 }
+
 

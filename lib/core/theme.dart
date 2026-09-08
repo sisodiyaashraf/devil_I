@@ -10,13 +10,25 @@ class AppColors {
 
 class AppTheme {
   static ThemeData get dark {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.terminalGreen,
+      brightness: Brightness.dark,
+    ).copyWith(
+      primary: AppColors.terminalGreen,
+      secondary: AppColors.corruptRed,
+      surface: AppColors.surface,
+      error: AppColors.corruptRed,
+    );
+
     return ThemeData(
+      useMaterial3: true,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.background,
-      colorScheme: const ColorScheme.dark(
-        primary: AppColors.terminalGreen,
-        secondary: AppColors.corruptRed,
-        surface: AppColors.surface,
+      colorScheme: colorScheme,
+      cardTheme: const CardThemeData(
+        color: AppColors.surface,
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       ),
       textTheme: const TextTheme(
         bodyLarge: TextStyle(
