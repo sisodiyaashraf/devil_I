@@ -82,5 +82,23 @@ class MemoryRepository {
       await prefs.setString(_keyUserAnswers, jsonEncode(updatedAnswers));
     } catch (_) {}
   }
-}
 
+  Future<Set<String>> getShownLore() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = prefs.getStringList(_keyShownLore) ?? [];
+      return list.toSet();
+    } catch (_) {
+      return {};
+    }
+  }
+
+  Future<void> markLoreShown(String text) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final current = await getShownLore();
+      current.add(text);
+      await prefs.setStringList(_keyShownLore, current.toList());
+    } catch (_) {}
+  }
+}
