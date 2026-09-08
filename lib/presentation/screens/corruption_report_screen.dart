@@ -103,20 +103,24 @@ class _CorruptionReportScreenState extends State<CorruptionReportScreen> {
                         const SizedBox(height: 12.0),
                         _buildStatRow('TOTAL SESSIONS LOGGED', '$_sessionCount', AppColors.staticGray),
                         const SizedBox(height: 28.0),
-                        Container(
-                          padding: const EdgeInsets.all(14.0),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: color.withValues(alpha: 0.5)),
-                            color: AppColors.surface,
+                        Card(
+                          elevation: 2,
+                          color: AppColors.surface,
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(color: color.withValues(alpha: 0.5)),
+                            borderRadius: BorderRadius.zero,
                           ),
-                          child: Text(
-                            diagnosis,
-                            style: TextStyle(
-                              fontFamily: 'monospace',
-                              fontSize: 13.0,
-                              color: color,
-                              fontWeight: FontWeight.w600,
-                              height: 1.4,
+                          child: Padding(
+                            padding: const EdgeInsets.all(14.0),
+                            child: Text(
+                              diagnosis,
+                              style: TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 13.0,
+                                color: color,
+                                fontWeight: FontWeight.w600,
+                                height: 1.4,
+                              ),
                             ),
                           ),
                         ),
@@ -133,6 +137,7 @@ class _CorruptionReportScreenState extends State<CorruptionReportScreen> {
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: AppColors.staticGray),
                         padding: const EdgeInsets.symmetric(vertical: 14.0),
+                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
                       ),
                       child: const Text(
                         '[CLOSE]',
@@ -142,12 +147,13 @@ class _CorruptionReportScreenState extends State<CorruptionReportScreen> {
                   ),
                   const SizedBox(width: 12.0),
                   Expanded(
-                    child: ElevatedButton(
+                    child: FilledButton(
                       onPressed: () => _shareReport(corruption),
-                      style: ElevatedButton.styleFrom(
+                      style: FilledButton.styleFrom(
                         backgroundColor: color.withValues(alpha: 0.2),
                         side: BorderSide(color: color),
                         padding: const EdgeInsets.symmetric(vertical: 14.0),
+                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
                       ),
                       child: Text(
                         '[SHARE REPORT]',
