@@ -37,9 +37,9 @@ void main() {
       final lowGain = CorruptionEngine.nextCorruptionLevel(0, PresenceSignal.idle, 0.7);
       final highGain = CorruptionEngine.nextCorruptionLevel(0, PresenceSignal.idle, 1.5);
 
-      expect(baseGain, equals(2));
-      expect(lowGain, equals(1)); // round(2 * 0.7) = 1
-      expect(highGain, equals(3)); // round(2 * 1.5) = 3
+      expect(baseGain, equals(4));
+      expect(lowGain, equals(3)); // round(4 * 0.7) = 3
+      expect(highGain, equals(6)); // round(4 * 1.5) = 6
     });
   });
 
