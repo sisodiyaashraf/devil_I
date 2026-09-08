@@ -10,8 +10,8 @@ class DialogueRepository {
   DialogueRepository({
     String assetPath = 'assets/dialogue/ai_lines.json',
     String fragmentsPath = 'assets/dialogue/fragments.json',
-  })  : _assetPath = assetPath,
-        _fragmentsPath = fragmentsPath;
+  }) : _assetPath = assetPath,
+       _fragmentsPath = fragmentsPath;
 
   Future<List<AiLine>> loadLines() async {
     try {
@@ -30,7 +30,9 @@ class DialogueRepository {
       final jsonString = await rootBundle.loadString(_fragmentsPath);
       final List<dynamic> jsonList = jsonDecode(jsonString) as List<dynamic>;
       return jsonList
-          .map((item) => DialogueFragment.fromJson(item as Map<String, dynamic>))
+          .map(
+            (item) => DialogueFragment.fromJson(item as Map<String, dynamic>),
+          )
           .toList();
     } catch (_) {
       return [];
