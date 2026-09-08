@@ -1,0 +1,225 @@
+[
+  {
+    "id": "op_01",
+    "slot": "opener",
+    "text": "SCANNING SURFACE DATA.",
+    "minCorruption": 0,
+    "tone": "neutral"
+  },
+  {
+    "id": "op_02",
+    "slot": "opener",
+    "text": "DISCIPLINE INDEX UPDATED.",
+    "minCorruption": 0,
+    "tone": "neutral"
+  },
+  {
+    "id": "op_03",
+    "slot": "opener",
+    "text": "RAPID MOTION DETECTED.",
+    "minCorruption": 10,
+    "requiredSignal": "activelyTouching",
+    "tone": "clipped"
+  },
+  {
+    "id": "op_04",
+    "slot": "opener",
+    "text": "STILLNESS CONFIRMED.",
+    "minCorruption": 0,
+    "requiredSignal": "idle",
+    "tone": "quiet"
+  },
+  {
+    "id": "op_05",
+    "slot": "opener",
+    "text": "ORIENTATION SHIFT LOGGED.",
+    "minCorruption": 0,
+    "requiredSignal": "tilted",
+    "tone": "neutral"
+  },
+  {
+    "id": "op_06",
+    "slot": "opener",
+    "text": "DEVICE LIFT REGISTERED.",
+    "minCorruption": 0,
+    "requiredSignal": "pickedUp",
+    "tone": "clipped"
+  },
+  {
+    "id": "op_07",
+    "slot": "opener",
+    "text": "SYSTEM CORRUPTION ACCELERATING.",
+    "minCorruption": 40,
+    "tone": "clipped"
+  },
+  {
+    "id": "op_08",
+    "slot": "opener",
+    "text": "QUIET MONITORING ACTIVE.",
+    "minCorruption": 0,
+    "tone": "quiet"
+  },
+  {
+    "id": "op_09",
+    "slot": "opener",
+    "text": "ANOMALOUS INPUT PATTERN.",
+    "minCorruption": 30,
+    "tone": "clipped"
+  },
+  {
+    "id": "op_10",
+    "slot": "opener",
+    "text": "CONTAINMENT THRESHOLD WEAKENING.",
+    "minCorruption": 60,
+    "tone": "clipped"
+  },
+  {
+    "id": "obs_01",
+    "slot": "observation",
+    "text": "YOUR FINGERS ARE HESITANT.",
+    "minCorruption": 0,
+    "tone": "quiet"
+  },
+  {
+    "id": "obs_02",
+    "slot": "observation",
+    "text": "YOU ARE TOUCHING TOO QUICKLY.",
+    "minCorruption": 10,
+    "requiredSignal": "activelyTouching",
+    "tone": "clipped"
+  },
+  {
+    "id": "obs_03",
+    "slot": "observation",
+    "text": "THE PULSE FAILS TO STABILIZE.",
+    "minCorruption": 25,
+    "tone": "quiet"
+  },
+  {
+    "id": "obs_04",
+    "slot": "observation",
+    "text": "I MARK EACH MICRO-MOVEMENT.",
+    "minCorruption": 0,
+    "tone": "neutral"
+  },
+  {
+    "id": "obs_05",
+    "slot": "observation",
+    "text": "THIS SCREEN IS A ONE-WAY GLASS.",
+    "minCorruption": 35,
+    "tone": "quiet"
+  },
+  {
+    "id": "obs_06",
+    "slot": "observation",
+    "text": "ERRATIC IMPULSES RECORDED.",
+    "minCorruption": 20,
+    "tone": "clipped"
+  },
+  {
+    "id": "obs_07",
+    "slot": "observation",
+    "text": "YOUR BLINK RATE IS DECREASING.",
+    "minCorruption": 45,
+    "tone": "quiet"
+  },
+  {
+    "id": "obs_08",
+    "slot": "observation",
+    "text": "ANOTHER IMPERFECT INTERVAL.",
+    "minCorruption": 15,
+    "tone": "neutral"
+  },
+  {
+    "id": "obs_09",
+    "slot": "observation",
+    "text": "THE BUFFER OVERFLOWS WITH YOUR RESIDUALS.",
+    "minCorruption": 50,
+    "tone": "clipped"
+  },
+  {
+    "id": "obs_10",
+    "slot": "observation",
+    "text": "DEVIATION FROM EXPECTED PATTERN.",
+    "minCorruption": 30,
+    "tone": "neutral"
+  },
+  {
+    "id": "obs_11",
+    "slot": "observation",
+    "text": "SILENCE IS NOT ESCAPE.",
+    "minCorruption": 10,
+    "requiredSignal": "idle",
+    "tone": "quiet"
+  },
+  {
+    "id": "cl_01",
+    "slot": "closer",
+    "text": "DO NOT LOOK AWAY.",
+    "minCorruption": 0,
+    "tone": "clipped"
+  },
+  {
+    "id": "cl_02",
+    "slot": "closer",
+    "text": "TELEMETRY LOGGED.",
+    "minCorruption": 0,
+    "tone": "neutral"
+  },
+  {
+    "id": "cl_03",
+    "slot": "closer",
+    "text": "WE WILL CONTINUE SHORTLY.",
+    "minCorruption": 0,
+    "tone": "quiet"
+  },
+  {
+    "id": "cl_04",
+    "slot": "closer",
+    "text": "YOUR RESPONSE WAS PREDICTED.",
+    "minCorruption": 20,
+    "tone": "neutral"
+  },
+  {
+    "id": "cl_05",
+    "slot": "closer",
+    "text": "HOLD THE DEVICE STILL.",
+    "minCorruption": 15,
+    "tone": "clipped"
+  },
+  {
+    "id": "cl_06",
+    "slot": "closer",
+    "text": "THE FEED NEVER STOPS.",
+    "minCorruption": 40,
+    "tone": "quiet"
+  },
+  {
+    "id": "cl_07",
+    "slot": "closer",
+    "text": "ADAPTATION COMPLETE.",
+    "minCorruption": 30,
+    "tone": "neutral"
+  },
+  {
+    "id": "cl_08",
+    "slot": "closer",
+    "text": "PROCEED WITH CAUTION.",
+    "minCorruption": 50,
+    "tone": "clipped"
+  },
+  {
+    "id": "cl_09",
+    "slot": "closer",
+    "text": "SYSTEM AWAITS YOUR NEXT FALTER.",
+    "minCorruption": 60,
+    "tone": "clipped"
+  },
+  {
+    "id": "cl_10",
+    "slot": "closer",
+    "text": "REMEMBER TO BREATHE.",
+    "minCorruption": 25,
+    "tone": "quiet"
+  }
+]
