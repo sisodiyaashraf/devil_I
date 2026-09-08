@@ -48,7 +48,7 @@ class FakePermissionDialog extends StatelessWidget {
                           style: TextStyle(
                             fontFamily: 'sans-serif',
                             fontSize: 13.0,
-                            color: const Color(0xFFB0B0B5),
+                            color: Color(0xFFB0B0B5),
                             height: 1.3,
                           ),
                         ),
