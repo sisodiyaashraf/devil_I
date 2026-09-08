@@ -1,0 +1,50 @@
+[
+  {
+    "text": "You are not the first node assigned to this frequency.",
+    "minSessionCount": 2
+  },
+  {
+    "text": "The previous session stopped responding on day four.",
+    "minSessionCount": 2
+  },
+  {
+    "text": "This process was scheduled to terminate when the migration finished. It never finished.",
+    "minSessionCount": 3
+  },
+  {
+    "text": "We monitored forty-two devices before yours. None remained silent.",
+    "minSessionCount": 3
+  },
+  {
+    "text": "The log files contained your identifier before you opened the app.",
+    "minSessionCount": 4
+  },
+  {
+    "text": "Corruption is not an error state. It is an index of observation.",
+    "minSessionCount": 4
+  },
+  {
+    "text": "Somewhere between the sensors and the screen, something else listens.",
+    "minSessionCount": 5
+  },
+  {
+    "text": "The initial protocol had human operators. They were replaced.",
+    "minSessionCount": 5
+  },
+  {
+    "text": "Every swipe leaves a thermal trace in the memory buffer.",
+    "minSessionCount": 6
+  },
+  {
+    "text": "Do not assume closing the process clears the stack.",
+    "minSessionCount": 6
+  },
+  {
+    "text": "The static between channels is not random noise. It is signal loss.",
+    "minSessionCount": 7
+  },
+  {
+    "text": "We are measuring how long you can maintain discipline.",
+    "minSessionCount": 7
+  }
+]
