@@ -18,19 +18,21 @@ class _MuteToggleButtonState extends State<MuteToggleButton> {
   @override
   Widget build(BuildContext context) {
     final isMuted = widget.audioService.isMuted;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () async {
+    return IconButton.filledTonal(
+      constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+      padding: EdgeInsets.zero,
+      visualDensity: VisualDensity.compact,
+      style: IconButton.styleFrom(
+        backgroundColor: Colors.transparent,
+        foregroundColor: isMuted ? AppColors.staticGray : AppColors.terminalGreen,
+      ),
+      onPressed: () async {
         await widget.audioService.toggleMute();
         setState(() {});
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
-        child: Icon(
-          isMuted ? Icons.volume_off : Icons.volume_up,
-          size: 16.0,
-          color: isMuted ? AppColors.staticGray : AppColors.terminalGreen,
-        ),
+      icon: Icon(
+        isMuted ? Icons.volume_off : Icons.volume_up,
+        size: 16.0,
       ),
     );
   }
