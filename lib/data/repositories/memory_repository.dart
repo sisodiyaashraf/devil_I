@@ -8,6 +8,7 @@ class MemoryRepository {
   static const String _keyPeakCorruption = 'memory_peak_corruption';
   static const String _keyUserLabel = 'memory_user_label';
   static const String _keyUserAnswers = 'memory_user_answers';
+  static const String _keyShownLore = 'memory_shown_lore';
 
   Future<SessionMemory> loadMemory() async {
     try {
