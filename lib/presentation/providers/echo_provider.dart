@@ -103,39 +103,61 @@ class EchoProvider extends ChangeNotifier {
       _engagementTracker.reset();
       _behaviorProfile.reset();
       _fragmentUsageCounts.clear();
-      await _notificationService.cancelScheduled();
-      await _notificationService.clearPersistentPresenceNotice();
-      await _audioService.loadMuteState();
-      await _voiceService.init();
-      await _audioService.playAmbient();
 
-      _environmentLines = await _environmentDialogueRepository.loadLines();
-      _fragments = await _dialogueRepository.loadFragments();
-      final prevMemory = await _memoryRepository.loadMemory();
-      await _memoryRepository.recordSessionStart();
-      final currMemory = await _memoryRepository.loadMemory();
-
-      _corruptionLevel = await _saveRepository.loadLastSessionCorruption();
-      await _memoryRepository.recordPeakCorruption(_corruptionLevel);
-
-      _allLines = await _dialogueRepository.loadLines();
-      await _audioService.updateAmbientIntensity(_corruptionLevel);
-
-      if (currMemory.sessionCount > 1) {
-        await _showMemoryLine(prevMemory, currMemory.sessionCount);
+      try {
+        await _notificationService.cancelScheduled();
+        await _notificationService.clearPersistentPresenceNotice();
+      } catch (e) {
+        debugPrint('Notification init warning: $e');
       }
 
-      if (currMemory.sessionCount >= 2 && (currMemory.sessionCount % 3 == 0 || Random().nextDouble() < 0.3)) {
-        final shownLore = await _memoryRepository.getShownLore();
-        final loreItem = await _loreRepository.pickUnseenLore(currMemory.sessionCount, shownLore);
-        if (loreItem != null) {
-          _currentLine = AiLine(text: loreItem.text, minCorruption: 0);
-          await _memoryRepository.markLoreShown(loreItem.text);
-          await _voiceService.stop();
-          await _voiceService.speak(loreItem.text, enabled: !isMuted);
-          notifyListeners();
-          await Future.delayed(const Duration(seconds: 4));
-        }
+      try {
+        await _audioService.loadMuteState();
+        await _voiceService.init();
+        await _audioService.playAmbient();
+      } catch (e) {
+        debugPrint('Audio/Voice init warning: $e');
+      }
+
+      try {
+        _environmentLines = await _environmentDialogueRepository.loadLines();
+      } catch (e) {
+        debugPrint('Environment repo load warning: $e');
+      }
+
+      try {
+        _fragments = await _dialogueRepository.loadFragments();
+      } catch (e) {
+        debugPrint('Dialogue fragments load warning: $e');
+      }
+
+      try {
+        _allLines = await _dialogueRepository.loadLines();
+      } catch (e) {
+        debugPrint('Dialogue lines load warning: $e');
+      }
+
+      SessionMemory? prevMemory;
+      SessionMemory? currMemory;
+      try {
+        prevMemory = await _memoryRepository.loadMemory();
+        await _memoryRepository.recordSessionStart();
+        currMemory = await _memoryRepository.loadMemory();
+      } catch (e) {
+        debugPrint('Memory repo warning: $e');
+      }
+
+      try {
+        final rawCorruption = await _saveRepository.loadLastSessionCorruption();
+        _corruptionLevel = rawCorruption.clamp(0, 40);
+        await _memoryRepository.recordPeakCorruption(_corruptionLevel);
+        await _audioService.updateAmbientIntensity(_corruptionLevel);
+      } catch (e) {
+        debugPrint('Save repo warning: $e');
+      }
+
+      if (_allLines.isNotEmpty && _currentLine == null) {
+        _currentLine = CorruptionEngine.pickLine(_allLines, PresenceSignal.idle, _corruptionLevel);
       }
 
       notifyListeners();
@@ -145,7 +167,37 @@ class EchoProvider extends ChangeNotifier {
       _signalSubscription =
           _presenceDetector.signalStream.listen(_onSignalReceived);
       _startCorruptionTimer();
-    } catch (_) {}
+
+      if (prevMemory != null && currMemory != null) {
+        _triggerInitialMemoryAndLore(prevMemory, currMemory);
+      }
+    } catch (e, st) {
+      debugPrint('Unhandled error in startSession: $e\n$st');
+    }
+  }
+
+  void _triggerInitialMemoryAndLore(SessionMemory prevMemory, SessionMemory currMemory) {
+    Future.microtask(() async {
+      try {
+        if (currMemory.sessionCount > 1) {
+          await _showMemoryLine(prevMemory, currMemory.sessionCount);
+        }
+
+        if (currMemory.sessionCount >= 2 && (currMemory.sessionCount % 3 == 0 || Random().nextDouble() < 0.3)) {
+          final shownLore = await _memoryRepository.getShownLore();
+          final loreItem = await _loreRepository.pickUnseenLore(currMemory.sessionCount, shownLore);
+          if (loreItem != null) {
+            _currentLine = AiLine(text: loreItem.text, minCorruption: 0);
+            await _memoryRepository.markLoreShown(loreItem.text);
+            await _voiceService.stop();
+            await _voiceService.speak(loreItem.text, enabled: !isMuted);
+            notifyListeners();
+          }
+        }
+      } catch (e) {
+        debugPrint('Memory/Lore trigger warning: $e');
+      }
+    });
   }
 
   Future<void> _showMemoryLine(SessionMemory prev, int count) async {
@@ -169,9 +221,10 @@ class EchoProvider extends ChangeNotifier {
         await _voiceService.stop();
         await _voiceService.speak(text, enabled: !isMuted);
         notifyListeners();
-        await Future.delayed(const Duration(seconds: 4));
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Error in _showMemoryLine: $e');
+    }
   }
 
   void _startCorruptionTimer() {
