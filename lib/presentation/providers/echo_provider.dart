@@ -482,7 +482,7 @@ class EchoProvider extends ChangeNotifier {
     try {
       _corruptionTimer?.cancel();
       await _signalSubscription?.cancel();
-      _presenceDetector.dispose();
+      _presenceDetector.pause();
       await _saveRepository.saveSessionCorruption(_corruptionLevel);
       await _memoryRepository.recordPeakCorruption(_corruptionLevel);
       await _audioService.stopAmbient();
