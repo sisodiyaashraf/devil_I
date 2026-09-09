@@ -23,20 +23,20 @@ class VoiceService {
       if (!_isInitialized) {
         await init();
       }
-      await _tts.stop();
+      _tts.stop().catchError((_) => null);
       final cleanText = text
           .replaceAll(RegExp(r'[^\x00-\x7F]'), '')
           .replaceAll(RegExp(r'\s+'), ' ')
           .trim();
       if (cleanText.isNotEmpty) {
-        await _tts.speak(cleanText);
+        _tts.speak(cleanText).catchError((_) => null);
       }
     } catch (_) {}
   }
 
   Future<void> stop() async {
     try {
-      await _tts.stop();
+      _tts.stop().catchError((_) => null);
     } catch (_) {}
   }
 }
