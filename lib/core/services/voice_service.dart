@@ -10,9 +10,9 @@ class VoiceService {
 
   Future<void> init() async {
     try {
-      await _tts.setSpeechRate(0.38);
-      await _tts.setPitch(0.65);
-      await _tts.setVolume(1.0);
+      _tts.setSpeechRate(0.38).catchError((_) => null);
+      _tts.setPitch(0.65).catchError((_) => null);
+      _tts.setVolume(1.0).catchError((_) => null);
       _isInitialized = true;
     } catch (_) {}
   }
