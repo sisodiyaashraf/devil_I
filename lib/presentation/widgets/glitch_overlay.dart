@@ -62,6 +62,7 @@ class _GlitchOverlayState extends State<GlitchOverlay> {
   }
 
   void _triggerGlitch({bool isHard = false}) {
+    if (_activeEffect != null) return;
     final now = DateTime.now();
     if (_lastGlitchTime != null &&
         now.difference(_lastGlitchTime!) < const Duration(milliseconds: 1500)) {
