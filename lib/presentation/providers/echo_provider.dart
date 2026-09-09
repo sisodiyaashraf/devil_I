@@ -419,7 +419,7 @@ class EchoProvider extends ChangeNotifier {
 
     try {
       final isNight = _environmentService.isNightHours();
-      final isLowBat = await _environmentService.isLowBattery();
+      final isLowBat = isNight ? await _environmentService.isLowBattery() : false;
 
       if (!isNight && !isLowBat) return;
 

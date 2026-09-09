@@ -63,17 +63,21 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   const sensorChannel = MethodChannel('dev.fluttercommunity.plus/sensors/method');
+  const accelChannel = MethodChannel('dev.fluttercommunity.plus/sensors/accelerometer');
   const globalAudioChannel = MethodChannel('xyz.luan/audioplayers.global');
   const playerAudioChannel = MethodChannel('xyz.luan/audioplayers');
+  const ttsChannel = MethodChannel('flutter_tts');
+  const notificationChannel = MethodChannel('dexterous.com/flutter/local_notifications');
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(sensorChannel, (MethodCall methodCall) async => null);
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(globalAudioChannel, (MethodCall methodCall) async => null);
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(playerAudioChannel, (MethodCall methodCall) async => null);
+    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(sensorChannel, (MethodCall methodCall) async => null);
+    messenger.setMockMethodCallHandler(accelChannel, (MethodCall methodCall) async => null);
+    messenger.setMockMethodCallHandler(globalAudioChannel, (MethodCall methodCall) async => null);
+    messenger.setMockMethodCallHandler(playerAudioChannel, (MethodCall methodCall) async => null);
+    messenger.setMockMethodCallHandler(ttsChannel, (MethodCall methodCall) async => null);
+    messenger.setMockMethodCallHandler(notificationChannel, (MethodCall methodCall) async => null);
   });
 
   group('SensorUtils tests', () {
