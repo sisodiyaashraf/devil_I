@@ -20,7 +20,11 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
   final notificationService = NotificationService();
-  await notificationService.init();
+  try {
+    await notificationService.init().timeout(const Duration(seconds: 3));
+  } catch (e) {
+    debugPrint('NotificationService init in main warning: $e');
+  }
   runApp(EchoApp(notificationService: notificationService));
 }
 
