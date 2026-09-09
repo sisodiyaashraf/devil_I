@@ -57,6 +57,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final line = echo.currentLine;
     final corruption = echo.corruptionLevel;
     final signal = echo.lastSignalForGlitch;
+    debugPrint('[MainScreen] build reached. Corruption: $corruption, Line: ${line?.text}');
     final isHighCorruption = corruption >= 60;
     final textColor = isHighCorruption ? AppColors.corruptRed : AppColors.terminalGreen;
 
