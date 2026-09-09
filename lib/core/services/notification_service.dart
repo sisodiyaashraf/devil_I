@@ -32,23 +32,18 @@ class NotificationService {
         iOS: iosSettings,
       );
 
-      await _plugin.initialize(initSettings).timeout(
-        const Duration(seconds: 3),
-        onTimeout: () => false,
-      );
+      await _plugin.initialize(initSettings);
 
       _plugin
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>()
           ?.requestNotificationsPermission()
-          .timeout(const Duration(seconds: 2), onTimeout: () => null)
           .catchError((_) => null);
 
       _plugin
           .resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin>()
           ?.requestPermissions(alert: true, badge: true, sound: true)
-          .timeout(const Duration(seconds: 2), onTimeout: () => null)
           .catchError((_) => null);
     } catch (_) {}
   }
