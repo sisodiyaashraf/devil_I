@@ -14,11 +14,11 @@ class AudioService {
   bool get isMuted => _isMuted;
 
   static const Map<String, String> _cues = {
-    'static': 'audio/creak.mp3',
-    'lowHum': 'audio/ambient.mp3',
-    'systemBeep': 'audio/heartbeat.mp3',
-    'distortedVoice': 'audio/creak.mp3',
-    'silence': 'audio/silence.mp3',
+    'static': 'audio/growl.mp3',
+    'lowHum': 'audio/growl.mp3',
+    'systemBeep': 'audio/chime.mp3',
+    'distortedVoice': 'audio/growl.mp3',
+    'silence': 'audio/chime.mp3',
   };
 
   Future<void> loadMuteState() async {
@@ -77,7 +77,7 @@ class AudioService {
     try {
       await _ambientPlayer.setReleaseMode(ReleaseMode.loop);
       await _ambientPlayer.setVolume(_isMuted ? 0.0 : 0.3);
-      await _ambientPlayer.play(AssetSource('audio/ambient.mp3'));
+      await _ambientPlayer.play(AssetSource('audio/growl.mp3'));
       _isAmbientPlaying = true;
     } catch (_) {}
   }
@@ -102,7 +102,7 @@ class AudioService {
     }
     _lastStingTime = now;
 
-    final path = _cues[cueKey] ?? 'audio/creak.mp3';
+    final path = _cues[cueKey] ?? 'audio/growl.mp3';
 
     try {
       await _stingPlayer.stop();
