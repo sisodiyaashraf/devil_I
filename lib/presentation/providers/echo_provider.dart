@@ -202,7 +202,9 @@ class EchoProvider extends ChangeNotifier {
 
   Future<void> _showMemoryLine(SessionMemory prev, int count) async {
     try {
-      final jsonStr = await rootBundle.loadString('assets/dialogue/memory_lines.json');
+      final jsonStr = await rootBundle.loadString('assets/dialogue/memory_lines.json')
+          .timeout(const Duration(seconds: 1), onTimeout: () => '');
+      if (jsonStr.isEmpty) return;
       final List<dynamic> jsonList = jsonDecode(jsonStr) as List<dynamic>;
       final lines = jsonList
           .map((i) => i['text'] as String)
