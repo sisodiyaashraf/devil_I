@@ -15,7 +15,10 @@ class DialogueRepository {
 
   Future<List<AiLine>> loadLines() async {
     try {
-      final jsonString = await rootBundle.loadString(_assetPath);
+      final jsonString = await rootBundle
+          .loadString(_assetPath)
+          .timeout(const Duration(seconds: 1), onTimeout: () => '');
+      if (jsonString.isEmpty) return [];
       final List<dynamic> jsonList = jsonDecode(jsonString) as List<dynamic>;
       return jsonList
           .map((item) => AiLine.fromJson(item as Map<String, dynamic>))
@@ -27,7 +30,10 @@ class DialogueRepository {
 
   Future<List<DialogueFragment>> loadFragments() async {
     try {
-      final jsonString = await rootBundle.loadString(_fragmentsPath);
+      final jsonString = await rootBundle
+          .loadString(_fragmentsPath)
+          .timeout(const Duration(seconds: 1), onTimeout: () => '');
+      if (jsonString.isEmpty) return [];
       final List<dynamic> jsonList = jsonDecode(jsonString) as List<dynamic>;
       return jsonList
           .map(

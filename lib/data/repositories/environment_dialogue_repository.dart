@@ -11,7 +11,10 @@ class EnvironmentDialogueRepository {
 
   Future<List<EnvironmentLine>> loadLines() async {
     try {
-      final jsonString = await rootBundle.loadString(_assetPath);
+      final jsonString = await rootBundle
+          .loadString(_assetPath)
+          .timeout(const Duration(seconds: 1), onTimeout: () => '');
+      if (jsonString.isEmpty) return [];
       final List<dynamic> jsonList = jsonDecode(jsonString) as List<dynamic>;
       return jsonList
           .map((item) => EnvironmentLine.fromJson(item as Map<String, dynamic>))

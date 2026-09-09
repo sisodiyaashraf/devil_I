@@ -15,7 +15,10 @@ class LoreRepository {
 
   Future<List<LoreFragment>> loadLore() async {
     try {
-      final jsonStr = await rootBundle.loadString(_assetPath);
+      final jsonStr = await rootBundle
+          .loadString(_assetPath)
+          .timeout(const Duration(seconds: 1), onTimeout: () => '');
+      if (jsonStr.isEmpty) return [];
       final List<dynamic> list = jsonDecode(jsonStr) as List<dynamic>;
       return list
           .map((i) => LoreFragment.fromJson(i as Map<String, dynamic>))
