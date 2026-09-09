@@ -189,8 +189,8 @@ class EchoProvider extends ChangeNotifier {
           if (loreItem != null) {
             _currentLine = AiLine(text: loreItem.text, minCorruption: 0);
             await _memoryRepository.markLoreShown(loreItem.text);
-            await _voiceService.stop();
-            await _voiceService.speak(loreItem.text, enabled: !isMuted);
+            _voiceService.stop();
+            _voiceService.speak(loreItem.text, enabled: !isMuted);
             notifyListeners();
           }
         }
@@ -218,8 +218,8 @@ class EchoProvider extends ChangeNotifier {
             .replaceAll('{userLabel}', prev.userLabel ?? '');
 
         _currentLine = AiLine(text: text, minCorruption: 0);
-        await _voiceService.stop();
-        await _voiceService.speak(text, enabled: !isMuted);
+        _voiceService.stop();
+        _voiceService.speak(text, enabled: !isMuted);
         notifyListeners();
       }
     } catch (e) {
