@@ -81,7 +81,7 @@ class NotificationService {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
-      );
+      ).timeout(const Duration(seconds: 2), onTimeout: () => null).catchError((_) => null);
     } catch (_) {}
   }
 
@@ -111,19 +111,19 @@ class NotificationService {
         'ECHO',
         'running',
         details,
-      );
+      ).timeout(const Duration(seconds: 2), onTimeout: () => null).catchError((_) => null);
     } catch (_) {}
   }
 
   Future<void> clearPersistentPresenceNotice() async {
     try {
-      await _plugin.cancel(999);
+      await _plugin.cancel(999).timeout(const Duration(seconds: 2), onTimeout: () => null).catchError((_) => null);
     } catch (_) {}
   }
 
   Future<void> cancelScheduled() async {
     try {
-      await _plugin.cancelAll();
+      await _plugin.cancelAll().timeout(const Duration(seconds: 2), onTimeout: () => null).catchError((_) => null);
     } catch (_) {}
   }
 }
