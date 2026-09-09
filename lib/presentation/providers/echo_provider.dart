@@ -487,8 +487,8 @@ class EchoProvider extends ChangeNotifier {
       await _memoryRepository.recordPeakCorruption(_corruptionLevel);
       await _audioService.stopAmbient();
       if (!isMuted) {
-        await _notificationService.showPersistentPresenceNotice(enabled: true);
-        await _notificationService.scheduleUnsettlingNotification(enabled: true);
+        _notificationService.showPersistentPresenceNotice(enabled: true);
+        _notificationService.scheduleUnsettlingNotification(enabled: true);
       }
     } catch (_) {}
   }
