@@ -10,9 +10,14 @@ class VoiceService {
 
   Future<void> init() async {
     try {
-      await _tts.setSpeechRate(0.38);
-      await _tts.setPitch(0.65);
-      await _tts.setVolume(1.0);
+      await Future.wait([
+        _tts.setSpeechRate(0.38),
+        _tts.setPitch(0.65),
+        _tts.setVolume(1.0),
+      ]).timeout(
+        const Duration(seconds: 3),
+        onTimeout: () => [],
+      );
       _isInitialized = true;
     } catch (_) {}
   }
@@ -23,13 +28,13 @@ class VoiceService {
       if (!_isInitialized) {
         await init();
       }
-      await _tts.stop();
+      await _tts.stop().timeout(const Duration(seconds: 1), onTimeout: () => 0);
       final cleanText = text
           .replaceAll(RegExp(r'[^\x00-\x7F]'), '')
           .replaceAll(RegExp(r'\s+'), ' ')
           .trim();
       if (cleanText.isNotEmpty) {
-        await _tts.speak(cleanText);
+        await _tts.speak(cleanText).timeout(const Duration(seconds: 4), onTimeout: () => 0);
       }
     } catch (_) {}
   }
