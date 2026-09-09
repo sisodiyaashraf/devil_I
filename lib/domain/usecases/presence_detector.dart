@@ -44,14 +44,25 @@ class PresenceDetector {
   void pause() {
     _isPaused = true;
     _idleCheckTimer?.cancel();
-    _accelSubscription?.pause();
+    _accelSubscription?.cancel();
+    _accelSubscription = null;
   }
 
   void resume() {
     _isPaused = false;
     _lastTouch = DateTime.now();
     _startIdleTimer();
-    _accelSubscription?.resume();
+    try {
+      final stream = _customSensorStream ?? accelerometerEventStream();
+      _accelSubscription = stream.listen(
+        (event) {
+          if (!_isPaused) {
+            _onAccelerometerEvent(event.x, event.y, event.z);
+          }
+        },
+        onError: (_) {},
+      );
+    } catch (_) {}
   }
 
   void _startIdleTimer() {
