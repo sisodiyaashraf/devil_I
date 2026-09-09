@@ -12,7 +12,10 @@ class EnvironmentService {
 
   Future<int> getBatteryLevel() async {
     try {
-      final level = await _battery.batteryLevel;
+      final level = await _battery.batteryLevel.timeout(
+        const Duration(seconds: 1),
+        onTimeout: () => -1,
+      );
       return level;
     } catch (_) {
       return -1;
